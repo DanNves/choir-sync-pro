@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Music } from "lucide-react";
-import choirHero from "@/assets/choir-hero.jpg";
+import loginHero from "@/assets/login-hero.jpg";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +29,7 @@ const Login = () => {
       {/* Left side - Hero image */}
       <div className="hidden lg:flex lg:w-1/2 relative">
         <img
-          src={choirHero}
+          src={loginHero}
           alt="Choir Sync - Gestão de Coral"
           className="object-cover w-full h-full"
         />
