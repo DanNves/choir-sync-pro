@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Music } from "lucide-react";
-import loginHero from "@/assets/login-hero.jpg";
+const loginHero = "/lovable-uploads/03654e25-5cfc-4470-8406-3d354b092da4.png";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
