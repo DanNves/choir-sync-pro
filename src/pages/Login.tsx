@@ -25,7 +25,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="h-screen flex overflow-hidden">
       {/* Left side - Hero image */}
       <div className="hidden lg:flex lg:w-1/2 relative">
         <img
@@ -34,15 +34,15 @@ const Login = () => {
           className="object-cover w-full h-full"
         />
         <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-          <div className="text-center text-white p-8">
-            <div className="flex items-center justify-center mb-6">
-              <Music className="h-12 w-12 mr-3" />
-              <h1 className="text-4xl font-bold">Choir Sync</h1>
+          <div className="text-center text-white p-6">
+            <div className="flex items-center justify-center mb-4">
+              <Music className="h-10 w-10 mr-3" />
+              <h1 className="text-3xl font-bold">Choir Sync</h1>
             </div>
-            <p className="text-xl opacity-90">
+            <p className="text-lg opacity-90">
               Sistema completo de gestão para corais
             </p>
-            <p className="text-lg opacity-75 mt-2">
+            <p className="text-base opacity-75 mt-1">
               Organize eventos, controle presenças e muito mais
             </p>
           </div>
@@ -50,15 +50,15 @@ const Login = () => {
       </div>
 
       {/* Right side - Login/Register forms */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-background">
+      <div className="flex-1 flex items-center justify-center p-6 bg-background overflow-y-auto">
         <div className="w-full max-w-md">
           {/* Mobile header */}
-          <div className="lg:hidden text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <Music className="h-8 w-8 mr-2 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">Choir Sync</h1>
+          <div className="lg:hidden text-center mb-6">
+            <div className="flex items-center justify-center mb-3">
+              <Music className="h-7 w-7 mr-2 text-primary" />
+              <h1 className="text-xl font-bold text-foreground">Choir Sync</h1>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Sistema de gestão para corais
             </p>
           </div>
