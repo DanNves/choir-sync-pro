@@ -53,17 +53,18 @@ const Usuarios = () => {
   const [novoUsuario, setNovoUsuario] = useState({
     nome: "",
     email: "",
-    papel: "",
+    cargo: "",
     local: "",
     instrumento: ""
   })
+  const [novoLocal, setNovoLocal] = useState("")
 
   const usuarios = [
     {
       id: 1,
       nome: "João Silva",
       email: "joao.silva@email.com",
-      papel: "Músico",
+      cargo: "Músico",
       local: "São Paulo - Central",
       status: "Ativo",
       instrumento: "Violão",
@@ -73,7 +74,7 @@ const Usuarios = () => {
       id: 2,
       nome: "Maria Santos",
       email: "maria.santos@email.com", 
-      papel: "Organista",
+      cargo: "Organista",
       local: "São Paulo - Central",
       status: "Ativo",
       instrumento: "Órgão",
@@ -83,7 +84,7 @@ const Usuarios = () => {
       id: 3,
       nome: "Pedro Costa",
       email: "pedro.costa@email.com",
-      papel: "Candidato",
+      cargo: "Candidato",
       local: "Rio de Janeiro - Norte",
       status: "Pendente",
       instrumento: "Bateria",
@@ -93,10 +94,10 @@ const Usuarios = () => {
       id: 4,
       nome: "Ana Oliveira",
       email: "ana.oliveira@email.com",
-      papel: "Instrutor",
+      cargo: "Ancião",
       local: "São Paulo - Central", 
       status: "Ativo",
-      instrumento: "Piano",
+      instrumento: "Não se aplica",
       ultimoAcesso: "Hoje, 16:20"
     }
   ]
@@ -105,7 +106,7 @@ const Usuarios = () => {
   const usuariosFiltrados = usuarios.filter(usuario =>
     usuario.nome.toLowerCase().includes(busca.toLowerCase()) ||
     usuario.email.toLowerCase().includes(busca.toLowerCase()) ||
-    usuario.papel.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.cargo.toLowerCase().includes(busca.toLowerCase()) ||
     usuario.local.toLowerCase().includes(busca.toLowerCase()) ||
     usuario.instrumento.toLowerCase().includes(busca.toLowerCase())
   )
@@ -118,7 +119,7 @@ const Usuarios = () => {
     setNovoUsuario({
       nome: "",
       email: "",
-      papel: "",
+      cargo: "",
       local: "",
       instrumento: ""
     })
@@ -133,12 +134,16 @@ const Usuarios = () => {
     }
   }
 
-  const getPapelColor = (papel: string) => {
-    switch (papel) {
+  const getCargoColor = (cargo: string) => {
+    switch (cargo) {
       case 'Administrador': return 'destructive'
-      case 'Instrutor': return 'default'
+      case 'Ancião': return 'default'
+      case 'Diácono': return 'secondary'
+      case 'Cooperador de Ofício': return 'outline'
+      case 'Cooperador de Jovens': return 'outline'
       case 'Organista': return 'secondary'
       case 'Músico': return 'outline'
+      case 'Candidato': return 'outline'
       default: return 'outline'
     }
   }
@@ -199,17 +204,20 @@ const Usuarios = () => {
                           />
                         </div>
                         <div className="grid gap-2">
-                          <Label htmlFor="papel">Papel</Label>
+                          <Label htmlFor="cargo">Cargo</Label>
                           <Select 
-                            value={novoUsuario.papel} 
-                            onValueChange={(value) => setNovoUsuario({...novoUsuario, papel: value})}
+                            value={novoUsuario.cargo} 
+                            onValueChange={(value) => setNovoUsuario({...novoUsuario, cargo: value})}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecione o papel" />
+                              <SelectValue placeholder="Selecione o cargo" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="Administrador">Administrador</SelectItem>
-                              <SelectItem value="Instrutor">Instrutor</SelectItem>
+                              <SelectItem value="Ancião">Ancião</SelectItem>
+                              <SelectItem value="Diácono">Diácono</SelectItem>
+                              <SelectItem value="Cooperador de Ofício">Cooperador de Ofício</SelectItem>
+                              <SelectItem value="Cooperador de Jovens">Cooperador de Jovens</SelectItem>
                               <SelectItem value="Organista">Organista</SelectItem>
                               <SelectItem value="Músico">Músico</SelectItem>
                               <SelectItem value="Candidato">Candidato</SelectItem>
@@ -218,20 +226,39 @@ const Usuarios = () => {
                         </div>
                         <div className="grid gap-2">
                           <Label htmlFor="local">Local</Label>
-                          <Select 
-                            value={novoUsuario.local} 
-                            onValueChange={(value) => setNovoUsuario({...novoUsuario, local: value})}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o local" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="São Paulo - Central">São Paulo - Central</SelectItem>
-                              <SelectItem value="Rio de Janeiro - Norte">Rio de Janeiro - Norte</SelectItem>
-                              <SelectItem value="Brasília - Plano Piloto">Brasília - Plano Piloto</SelectItem>
-                              <SelectItem value="Belo Horizonte - Centro">Belo Horizonte - Centro</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="space-y-2">
+                            <Select 
+                              value={novoUsuario.local} 
+                              onValueChange={(value) => {
+                                if (value === "novo") {
+                                  setNovoUsuario({...novoUsuario, local: ""})
+                                } else {
+                                  setNovoUsuario({...novoUsuario, local: value})
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o local" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="São Paulo - Central">São Paulo - Central</SelectItem>
+                                <SelectItem value="Rio de Janeiro - Norte">Rio de Janeiro - Norte</SelectItem>
+                                <SelectItem value="Brasília - Plano Piloto">Brasília - Plano Piloto</SelectItem>
+                                <SelectItem value="Belo Horizonte - Centro">Belo Horizonte - Centro</SelectItem>
+                                <SelectItem value="novo">Adicionar novo local...</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {novoUsuario.local === "" && (
+                              <Input
+                                placeholder="Digite o novo local"
+                                value={novoLocal}
+                                onChange={(e) => {
+                                  setNovoLocal(e.target.value)
+                                  setNovoUsuario({...novoUsuario, local: e.target.value})
+                                }}
+                              />
+                            )}
+                          </div>
                         </div>
                         <div className="grid gap-2">
                           <Label htmlFor="instrumento">Instrumento</Label>
@@ -243,6 +270,7 @@ const Usuarios = () => {
                               <SelectValue placeholder="Selecione o instrumento" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="Não se aplica">Não se aplica</SelectItem>
                               <SelectItem value="Piano">Piano</SelectItem>
                               <SelectItem value="Órgão">Órgão</SelectItem>
                               <SelectItem value="Violão">Violão</SelectItem>
@@ -352,7 +380,7 @@ const Usuarios = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Nome</TableHead>
-                        <TableHead>Papel</TableHead>
+                        <TableHead>Cargo</TableHead>
                         <TableHead>Local</TableHead>
                         <TableHead>Instrumento</TableHead>
                         <TableHead>Status</TableHead>
@@ -370,8 +398,8 @@ const Usuarios = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={getPapelColor(usuario.papel)}>
-                              {usuario.papel}
+                            <Badge variant={getCargoColor(usuario.cargo)}>
+                              {usuario.cargo}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">
