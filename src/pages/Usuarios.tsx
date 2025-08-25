@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
@@ -5,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
 import { 
   Users, 
   UserPlus, 
@@ -28,8 +30,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const Usuarios = () => {
+  const [busca, setBusca] = useState("")
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [novoUsuario, setNovoUsuario] = useState({
+    nome: "",
+    email: "",
+    papel: "",
+    local: "",
+    instrumento: ""
+  })
+
   const usuarios = [
     {
       id: 1,
@@ -73,6 +101,29 @@ const Usuarios = () => {
     }
   ]
 
+  // Filtrar usuários baseado na busca
+  const usuariosFiltrados = usuarios.filter(usuario =>
+    usuario.nome.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.email.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.papel.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.local.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.instrumento.toLowerCase().includes(busca.toLowerCase())
+  )
+
+  const handleSubmitNovoUsuario = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Aqui você adicionaria a lógica para salvar o usuário
+    console.log("Novo usuário:", novoUsuario)
+    setDialogOpen(false)
+    setNovoUsuario({
+      nome: "",
+      email: "",
+      papel: "",
+      local: "",
+      instrumento: ""
+    })
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Ativo': return 'default'
@@ -110,10 +161,113 @@ const Usuarios = () => {
                     Gerencie membros, papéis e permissões do sistema
                   </p>
                 </div>
-                <Button className="gap-2">
-                  <UserPlus className="w-4 h-4" />
-                  Novo Usuário
-                </Button>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2">
+                      <UserPlus className="w-4 h-4" />
+                      Novo Usuário
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Adicionar Novo Usuário</DialogTitle>
+                      <DialogDescription>
+                        Preencha as informações do novo usuário abaixo.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmitNovoUsuario}>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="nome">Nome completo</Label>
+                          <Input
+                            id="nome"
+                            value={novoUsuario.nome}
+                            onChange={(e) => setNovoUsuario({...novoUsuario, nome: e.target.value})}
+                            placeholder="Digite o nome completo"
+                            required
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="email">E-mail</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={novoUsuario.email}
+                            onChange={(e) => setNovoUsuario({...novoUsuario, email: e.target.value})}
+                            placeholder="Digite o e-mail"
+                            required
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="papel">Papel</Label>
+                          <Select 
+                            value={novoUsuario.papel} 
+                            onValueChange={(value) => setNovoUsuario({...novoUsuario, papel: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o papel" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Administrador">Administrador</SelectItem>
+                              <SelectItem value="Instrutor">Instrutor</SelectItem>
+                              <SelectItem value="Organista">Organista</SelectItem>
+                              <SelectItem value="Músico">Músico</SelectItem>
+                              <SelectItem value="Candidato">Candidato</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="local">Local</Label>
+                          <Select 
+                            value={novoUsuario.local} 
+                            onValueChange={(value) => setNovoUsuario({...novoUsuario, local: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o local" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="São Paulo - Central">São Paulo - Central</SelectItem>
+                              <SelectItem value="Rio de Janeiro - Norte">Rio de Janeiro - Norte</SelectItem>
+                              <SelectItem value="Brasília - Plano Piloto">Brasília - Plano Piloto</SelectItem>
+                              <SelectItem value="Belo Horizonte - Centro">Belo Horizonte - Centro</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="instrumento">Instrumento</Label>
+                          <Select 
+                            value={novoUsuario.instrumento} 
+                            onValueChange={(value) => setNovoUsuario({...novoUsuario, instrumento: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o instrumento" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Piano">Piano</SelectItem>
+                              <SelectItem value="Órgão">Órgão</SelectItem>
+                              <SelectItem value="Violão">Violão</SelectItem>
+                              <SelectItem value="Guitarra">Guitarra</SelectItem>
+                              <SelectItem value="Baixo">Baixo</SelectItem>
+                              <SelectItem value="Bateria">Bateria</SelectItem>
+                              <SelectItem value="Violino">Violino</SelectItem>
+                              <SelectItem value="Flauta">Flauta</SelectItem>
+                              <SelectItem value="Saxofone">Saxofone</SelectItem>
+                              <SelectItem value="Trompete">Trompete</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit">
+                          Adicionar Usuário
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {/* Stats Cards */}
@@ -184,6 +338,8 @@ const Usuarios = () => {
                       <Input 
                         placeholder="Buscar usuários..." 
                         className="pl-10 bg-background/50"
+                        value={busca}
+                        onChange={(e) => setBusca(e.target.value)}
                       />
                     </div>
                     <Button variant="outline" size="icon">
@@ -205,7 +361,7 @@ const Usuarios = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {usuarios.map((usuario) => (
+                      {usuariosFiltrados.map((usuario) => (
                         <TableRow key={usuario.id}>
                           <TableCell>
                             <div>
