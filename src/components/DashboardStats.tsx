@@ -9,8 +9,22 @@ import {
   Clock,
   CheckCircle
 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export function DashboardStats() {
+  const navigate = useNavigate()
+
+  const handleNavigateToEvents = () => {
+    navigate('/eventos')
+  }
+
+  const handleNavigateToPresencas = () => {
+    navigate('/presencas')
+  }
+
+  const handleNavigateToRanking = () => {
+    navigate('/ranking')
+  }
   const stats = [
     {
       title: "Membros Ativos",
@@ -138,7 +152,10 @@ export function DashboardStats() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 hover:shadow-lg transition-shadow cursor-pointer">
+        <Card 
+          className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={handleNavigateToEvents}
+        >
           <CardContent className="p-6 text-center">
             <Calendar className="w-8 h-8 text-primary mx-auto mb-3" />
             <h3 className="font-semibold text-foreground mb-2">Criar Evento</h3>
@@ -146,7 +163,10 @@ export function DashboardStats() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20 hover:shadow-lg transition-shadow cursor-pointer">
+        <Card 
+          className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20 hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={handleNavigateToPresencas}
+        >
           <CardContent className="p-6 text-center">
             <CheckCircle className="w-8 h-8 text-accent mx-auto mb-3" />
             <h3 className="font-semibold text-foreground mb-2">Registrar Presença</h3>
@@ -154,7 +174,10 @@ export function DashboardStats() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20 hover:shadow-lg transition-shadow cursor-pointer">
+        <Card 
+          className="bg-gradient-to-br from-success/10 to-success/5 border-success/20 hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={handleNavigateToRanking}
+        >
           <CardContent className="p-6 text-center">
             <Award className="w-8 h-8 text-success mx-auto mb-3" />
             <h3 className="font-semibold text-foreground mb-2">Ver Ranking</h3>
