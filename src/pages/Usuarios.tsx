@@ -59,13 +59,13 @@ const Usuarios = () => {
     instrumentoOutro: ""
   })
 
-  const usuarios = [
+  const [usuarios, setUsuarios] = useState([
     {
       id: 1,
       nome: "João Silva",
       email: "joao.silva@email.com",
       papel: "Músico",
-      local: "São Paulo - Central",
+      local: "Centro - São Paulo - SP - Brasil",
       status: "Ativo",
       instrumento: "Violão",
       ultimoAcesso: "Hoje, 14:30"
@@ -75,7 +75,7 @@ const Usuarios = () => {
       nome: "Maria Santos",
       email: "maria.santos@email.com", 
       papel: "Organista",
-      local: "São Paulo - Central",
+      local: "Centro - Salvador - BA - Brasil",
       status: "Ativo",
       instrumento: "Órgão",
       ultimoAcesso: "Ontem, 19:45"
@@ -84,10 +84,10 @@ const Usuarios = () => {
       id: 3,
       nome: "Pedro Costa",
       email: "pedro.costa@email.com",
-      papel: "Candidato",
-      local: "Rio de Janeiro - Norte",
+      papel: "Ancião",
+      local: "Norte - Rio de Janeiro - RJ - Brasil",
       status: "Pendente",
-      instrumento: "Bateria",
+      instrumento: "Não possui",
       ultimoAcesso: "2 dias atrás"
     },
     {
@@ -95,26 +95,36 @@ const Usuarios = () => {
       nome: "Ana Oliveira",
       email: "ana.oliveira@email.com",
       papel: "Instrutor",
-      local: "São Paulo - Central", 
+      local: "Centro - Belo Horizonte - MG - Brasil", 
       status: "Ativo",
       instrumento: "Piano",
       ultimoAcesso: "Hoje, 16:20"
     }
-  ]
-
-  // Filtrar usuários baseado na busca
-  const usuariosFiltrados = usuarios.filter(usuario =>
-    usuario.nome.toLowerCase().includes(busca.toLowerCase()) ||
-    usuario.email.toLowerCase().includes(busca.toLowerCase()) ||
-    usuario.papel.toLowerCase().includes(busca.toLowerCase()) ||
-    usuario.local.toLowerCase().includes(busca.toLowerCase()) ||
-    usuario.instrumento.toLowerCase().includes(busca.toLowerCase())
-  )
+  ])
 
   const handleSubmitNovoUsuario = (e: React.FormEvent) => {
     e.preventDefault()
-    // Aqui você adicionaria a lógica para salvar o usuário
-    console.log("Novo usuário:", novoUsuario)
+    
+    const instrumentoFinal = novoUsuario.instrumento === "Outro" 
+      ? novoUsuario.instrumentoOutro 
+      : novoUsuario.instrumento
+
+    const novoId = Math.max(...usuarios.map(u => u.id)) + 1
+    
+    const usuarioCompleto = {
+      id: novoId,
+      nome: novoUsuario.nome,
+      email: novoUsuario.email,
+      papel: novoUsuario.papel,
+      local: novoUsuario.local,
+      status: "Ativo",
+      instrumento: instrumentoFinal,
+      ultimoAcesso: "Agora mesmo"
+    }
+
+    setUsuarios([...usuarios, usuarioCompleto])
+    console.log("Novo usuário salvo:", usuarioCompleto)
+    
     setDialogOpen(false)
     setNovoUsuario({
       nome: "",
@@ -125,6 +135,15 @@ const Usuarios = () => {
       instrumentoOutro: ""
     })
   }
+
+  // Filtrar usuários baseado na busca
+  const usuariosFiltrados = usuarios.filter(usuario =>
+    usuario.nome.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.email.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.papel.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.local.toLowerCase().includes(busca.toLowerCase()) ||
+    usuario.instrumento.toLowerCase().includes(busca.toLowerCase())
+  )
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -141,6 +160,11 @@ const Usuarios = () => {
       case 'Instrutor': return 'default'
       case 'Organista': return 'secondary'
       case 'Músico': return 'outline'
+      case 'Ancião': return 'default'
+      case 'Diácono': return 'secondary'
+      case 'Cooperador': return 'outline'
+      case 'Cooperador de Jovens': return 'outline'
+      case 'Candidato': return 'secondary'
       default: return 'outline'
     }
   }
@@ -201,16 +225,20 @@ const Usuarios = () => {
                           />
                         </div>
                         <div className="grid gap-2">
-                          <Label htmlFor="papel">Papel</Label>
+                          <Label htmlFor="papel">Cargo</Label>
                           <Select 
                             value={novoUsuario.papel} 
                             onValueChange={(value) => setNovoUsuario({...novoUsuario, papel: value})}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecione o papel" />
+                              <SelectValue placeholder="Selecione o cargo" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="Administrador">Administrador</SelectItem>
+                              <SelectItem value="Ancião">Ancião</SelectItem>
+                              <SelectItem value="Diácono">Diácono</SelectItem>
+                              <SelectItem value="Cooperador">Cooperador</SelectItem>
+                              <SelectItem value="Cooperador de Jovens">Cooperador de Jovens</SelectItem>
                               <SelectItem value="Instrutor">Instrutor</SelectItem>
                               <SelectItem value="Organista">Organista</SelectItem>
                               <SelectItem value="Músico">Músico</SelectItem>
@@ -240,10 +268,17 @@ const Usuarios = () => {
                               <SelectValue placeholder="Selecione o instrumento" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Violino">Violino</SelectItem>
                               <SelectItem value="Piano">Piano</SelectItem>
+                              <SelectItem value="Órgão">Órgão</SelectItem>
                               <SelectItem value="Violão">Violão</SelectItem>
+                              <SelectItem value="Guitarra">Guitarra</SelectItem>
+                              <SelectItem value="Baixo">Baixo</SelectItem>
+                              <SelectItem value="Bateria">Bateria</SelectItem>
+                              <SelectItem value="Violino">Violino</SelectItem>
                               <SelectItem value="Flauta">Flauta</SelectItem>
+                              <SelectItem value="Saxofone">Saxofone</SelectItem>
+                              <SelectItem value="Trompete">Trompete</SelectItem>
+                              <SelectItem value="Teclado">Teclado</SelectItem>
                               <SelectItem value="Não possui">Não possui</SelectItem>
                               <SelectItem value="Outro">Outro</SelectItem>
                             </SelectContent>
