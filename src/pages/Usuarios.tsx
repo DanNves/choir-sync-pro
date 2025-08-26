@@ -55,7 +55,8 @@ const Usuarios = () => {
     email: "",
     papel: "",
     local: "",
-    instrumento: ""
+    instrumento: "",
+    instrumentoOutro: ""
   })
 
   const usuarios = [
@@ -120,7 +121,8 @@ const Usuarios = () => {
       email: "",
       papel: "",
       local: "",
-      instrumento: ""
+      instrumento: "",
+      instrumentoOutro: ""
     })
   }
 
@@ -217,44 +219,43 @@ const Usuarios = () => {
                           </Select>
                         </div>
                         <div className="grid gap-2">
-                          <Label htmlFor="local">Local</Label>
-                          <Select 
-                            value={novoUsuario.local} 
-                            onValueChange={(value) => setNovoUsuario({...novoUsuario, local: value})}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o local" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="São Paulo - Central">São Paulo - Central</SelectItem>
-                              <SelectItem value="Rio de Janeiro - Norte">Rio de Janeiro - Norte</SelectItem>
-                              <SelectItem value="Brasília - Plano Piloto">Brasília - Plano Piloto</SelectItem>
-                              <SelectItem value="Belo Horizonte - Centro">Belo Horizonte - Centro</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Label htmlFor="local">Localidade</Label>
+                          <Input
+                            id="local"
+                            value={novoUsuario.local}
+                            onChange={(e) => setNovoUsuario({...novoUsuario, local: e.target.value})}
+                            placeholder="Ex: Centro - Salvador - BA - Brasil"
+                            required
+                          />
                         </div>
                         <div className="grid gap-2">
                           <Label htmlFor="instrumento">Instrumento</Label>
                           <Select 
                             value={novoUsuario.instrumento} 
-                            onValueChange={(value) => setNovoUsuario({...novoUsuario, instrumento: value})}
+                            onValueChange={(value) => {
+                              setNovoUsuario({...novoUsuario, instrumento: value, instrumentoOutro: ""})
+                            }}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o instrumento" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Piano">Piano</SelectItem>
-                              <SelectItem value="Órgão">Órgão</SelectItem>
-                              <SelectItem value="Violão">Violão</SelectItem>
-                              <SelectItem value="Guitarra">Guitarra</SelectItem>
-                              <SelectItem value="Baixo">Baixo</SelectItem>
-                              <SelectItem value="Bateria">Bateria</SelectItem>
                               <SelectItem value="Violino">Violino</SelectItem>
+                              <SelectItem value="Piano">Piano</SelectItem>
+                              <SelectItem value="Violão">Violão</SelectItem>
                               <SelectItem value="Flauta">Flauta</SelectItem>
-                              <SelectItem value="Saxofone">Saxofone</SelectItem>
-                              <SelectItem value="Trompete">Trompete</SelectItem>
+                              <SelectItem value="Não possui">Não possui</SelectItem>
+                              <SelectItem value="Outro">Outro</SelectItem>
                             </SelectContent>
                           </Select>
+                          {novoUsuario.instrumento === "Outro" && (
+                            <Input
+                              placeholder="Especifique o instrumento"
+                              value={novoUsuario.instrumentoOutro}
+                              onChange={(e) => setNovoUsuario({...novoUsuario, instrumentoOutro: e.target.value})}
+                              className="mt-2"
+                            />
+                          )}
                         </div>
                       </div>
                       <DialogFooter>
