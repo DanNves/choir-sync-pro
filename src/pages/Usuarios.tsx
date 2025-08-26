@@ -50,6 +50,8 @@ import {
 const Usuarios = () => {
   const [busca, setBusca] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [usuarioEditando, setUsuarioEditando] = useState<any>(null)
   const [novoUsuario, setNovoUsuario] = useState({
     nome: "",
     email: "",
@@ -58,6 +60,7 @@ const Usuarios = () => {
     instrumento: "",
     instrumentoOutro: ""
   })
+  const [errors, setErrors] = useState<{[key: string]: string}>({})
 
   const [usuarios, setUsuarios] = useState([
     {
@@ -102,8 +105,39 @@ const Usuarios = () => {
     }
   ])
 
+  const validateForm = (data: any, isEdit = false) => {
+    const newErrors: {[key: string]: string} = {}
+    
+    if (!data.email) {
+      newErrors.email = "E-mail é obrigatório"
+    } else {
+      const emailExists = usuarios.some(u => 
+        u.email === data.email && (!isEdit || u.id !== data.id)
+      )
+      if (emailExists) {
+        newErrors.email = "Este e-mail já está sendo usado"
+      }
+    }
+    
+    if (!data.papel) {
+      newErrors.papel = "Cargo é obrigatório"
+    }
+    
+    if (!data.instrumento) {
+      newErrors.instrumento = "Instrumento é obrigatório"
+    }
+    
+    return newErrors
+  }
+
   const handleSubmitNovoUsuario = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    const formErrors = validateForm(novoUsuario)
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors)
+      return
+    }
     
     const instrumentoFinal = novoUsuario.instrumento === "Outro" 
       ? novoUsuario.instrumentoOutro 
@@ -123,9 +157,9 @@ const Usuarios = () => {
     }
 
     setUsuarios([...usuarios, usuarioCompleto])
-    console.log("Novo usuário salvo:", usuarioCompleto)
     
     setDialogOpen(false)
+    setErrors({})
     setNovoUsuario({
       nome: "",
       email: "",
@@ -134,6 +168,46 @@ const Usuarios = () => {
       instrumento: "",
       instrumentoOutro: ""
     })
+  }
+
+  const handleEditUsuario = (usuario: any) => {
+    setUsuarioEditando({
+      ...usuario,
+      instrumentoOutro: ""
+    })
+    setEditDialogOpen(true)
+    setErrors({})
+  }
+
+  const handleSubmitEditUsuario = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const formErrors = validateForm(usuarioEditando, true)
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors)
+      return
+    }
+    
+    const instrumentoFinal = usuarioEditando.instrumento === "Outro" 
+      ? usuarioEditando.instrumentoOutro 
+      : usuarioEditando.instrumento
+
+    const usuarioAtualizado = {
+      ...usuarioEditando,
+      instrumento: instrumentoFinal
+    }
+
+    setUsuarios(usuarios.map(u => 
+      u.id === usuarioEditando.id ? usuarioAtualizado : u
+    ))
+    
+    setEditDialogOpen(false)
+    setUsuarioEditando(null)
+    setErrors({})
+  }
+
+  const handleRemoverUsuario = (id: number) => {
+    setUsuarios(usuarios.filter(u => u.id !== id))
   }
 
   // Filtrar usuários baseado na busca
@@ -223,6 +297,9 @@ const Usuarios = () => {
                             placeholder="Digite o e-mail"
                             required
                           />
+                          {errors.email && (
+                            <p className="text-sm text-destructive">{errors.email}</p>
+                          )}
                         </div>
                         <div className="grid gap-2">
                           <Label htmlFor="papel">Cargo</Label>
@@ -245,6 +322,9 @@ const Usuarios = () => {
                               <SelectItem value="Candidato">Candidato</SelectItem>
                             </SelectContent>
                           </Select>
+                          {errors.papel && (
+                            <p className="text-sm text-destructive">{errors.papel}</p>
+                          )}
                         </div>
                         <div className="grid gap-2">
                           <Label htmlFor="local">Localidade</Label>
@@ -268,17 +348,23 @@ const Usuarios = () => {
                               <SelectValue placeholder="Selecione o instrumento" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Piano">Piano</SelectItem>
-                              <SelectItem value="Órgão">Órgão</SelectItem>
-                              <SelectItem value="Violão">Violão</SelectItem>
-                              <SelectItem value="Guitarra">Guitarra</SelectItem>
-                              <SelectItem value="Baixo">Baixo</SelectItem>
-                              <SelectItem value="Bateria">Bateria</SelectItem>
                               <SelectItem value="Violino">Violino</SelectItem>
+                              <SelectItem value="Viola">Viola</SelectItem>
+                              <SelectItem value="Violoncelo">Violoncelo</SelectItem>
                               <SelectItem value="Flauta">Flauta</SelectItem>
-                              <SelectItem value="Saxofone">Saxofone</SelectItem>
+                              <SelectItem value="Clarinete">Clarinete</SelectItem>
+                              <SelectItem value="Oboé">Oboé</SelectItem>
+                              <SelectItem value="Clarone">Clarone</SelectItem>
+                              <SelectItem value="Sax Soprano">Sax Soprano</SelectItem>
+                              <SelectItem value="Sax Curvo">Sax Curvo</SelectItem>
+                              <SelectItem value="Sax Alto">Sax Alto</SelectItem>
+                              <SelectItem value="Sax Tenor">Sax Tenor</SelectItem>
+                              <SelectItem value="Sax Barítono">Sax Barítono</SelectItem>
                               <SelectItem value="Trompete">Trompete</SelectItem>
-                              <SelectItem value="Teclado">Teclado</SelectItem>
+                              <SelectItem value="Euphonio">Euphonio</SelectItem>
+                              <SelectItem value="Bombardino">Bombardino</SelectItem>
+                              <SelectItem value="Trombone">Trombone</SelectItem>
+                              <SelectItem value="Tuba">Tuba</SelectItem>
                               <SelectItem value="Não possui">Não possui</SelectItem>
                               <SelectItem value="Outro">Outro</SelectItem>
                             </SelectContent>
@@ -291,6 +377,9 @@ const Usuarios = () => {
                               className="mt-2"
                             />
                           )}
+                          {errors.instrumento && (
+                            <p className="text-sm text-destructive">{errors.instrumento}</p>
+                          )}
                         </div>
                       </div>
                       <DialogFooter>
@@ -302,6 +391,136 @@ const Usuarios = () => {
                         </Button>
                       </DialogFooter>
                     </form>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Dialog de Edição */}
+                <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Editar Usuário</DialogTitle>
+                      <DialogDescription>
+                        Edite as informações do usuário abaixo.
+                      </DialogDescription>
+                    </DialogHeader>
+                    {usuarioEditando && (
+                      <form onSubmit={handleSubmitEditUsuario}>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="edit-nome">Nome completo</Label>
+                            <Input
+                              id="edit-nome"
+                              value={usuarioEditando.nome}
+                              onChange={(e) => setUsuarioEditando({...usuarioEditando, nome: e.target.value})}
+                              placeholder="Digite o nome completo"
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="edit-email">E-mail</Label>
+                            <Input
+                              id="edit-email"
+                              type="email"
+                              value={usuarioEditando.email}
+                              onChange={(e) => setUsuarioEditando({...usuarioEditando, email: e.target.value})}
+                              placeholder="Digite o e-mail"
+                              required
+                            />
+                            {errors.email && (
+                              <p className="text-sm text-destructive">{errors.email}</p>
+                            )}
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="edit-papel">Cargo</Label>
+                            <Select 
+                              value={usuarioEditando.papel} 
+                              onValueChange={(value) => setUsuarioEditando({...usuarioEditando, papel: value})}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o cargo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Administrador">Administrador</SelectItem>
+                                <SelectItem value="Ancião">Ancião</SelectItem>
+                                <SelectItem value="Diácono">Diácono</SelectItem>
+                                <SelectItem value="Cooperador">Cooperador</SelectItem>
+                                <SelectItem value="Cooperador de Jovens">Cooperador de Jovens</SelectItem>
+                                <SelectItem value="Instrutor">Instrutor</SelectItem>
+                                <SelectItem value="Organista">Organista</SelectItem>
+                                <SelectItem value="Músico">Músico</SelectItem>
+                                <SelectItem value="Candidato">Candidato</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors.papel && (
+                              <p className="text-sm text-destructive">{errors.papel}</p>
+                            )}
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="edit-local">Localidade</Label>
+                            <Input
+                              id="edit-local"
+                              value={usuarioEditando.local}
+                              onChange={(e) => setUsuarioEditando({...usuarioEditando, local: e.target.value})}
+                              placeholder="Ex: Centro - Salvador - BA - Brasil"
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="edit-instrumento">Instrumento</Label>
+                            <Select 
+                              value={usuarioEditando.instrumento} 
+                              onValueChange={(value) => {
+                                setUsuarioEditando({...usuarioEditando, instrumento: value, instrumentoOutro: ""})
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o instrumento" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Violino">Violino</SelectItem>
+                                <SelectItem value="Viola">Viola</SelectItem>
+                                <SelectItem value="Violoncelo">Violoncelo</SelectItem>
+                                <SelectItem value="Flauta">Flauta</SelectItem>
+                                <SelectItem value="Clarinete">Clarinete</SelectItem>
+                                <SelectItem value="Oboé">Oboé</SelectItem>
+                                <SelectItem value="Clarone">Clarone</SelectItem>
+                                <SelectItem value="Sax Soprano">Sax Soprano</SelectItem>
+                                <SelectItem value="Sax Curvo">Sax Curvo</SelectItem>
+                                <SelectItem value="Sax Alto">Sax Alto</SelectItem>
+                                <SelectItem value="Sax Tenor">Sax Tenor</SelectItem>
+                                <SelectItem value="Sax Barítono">Sax Barítono</SelectItem>
+                                <SelectItem value="Trompete">Trompete</SelectItem>
+                                <SelectItem value="Euphonio">Euphonio</SelectItem>
+                                <SelectItem value="Bombardino">Bombardino</SelectItem>
+                                <SelectItem value="Trombone">Trombone</SelectItem>
+                                <SelectItem value="Tuba">Tuba</SelectItem>
+                                <SelectItem value="Não possui">Não possui</SelectItem>
+                                <SelectItem value="Outro">Outro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {usuarioEditando.instrumento === "Outro" && (
+                              <Input
+                                placeholder="Especifique o instrumento"
+                                value={usuarioEditando.instrumentoOutro}
+                                onChange={(e) => setUsuarioEditando({...usuarioEditando, instrumentoOutro: e.target.value})}
+                                className="mt-2"
+                              />
+                            )}
+                            {errors.instrumento && (
+                              <p className="text-sm text-destructive">{errors.instrumento}</p>
+                            )}
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button type="submit">
+                            Salvar Alterações
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    )}
                   </DialogContent>
                 </Dialog>
               </div>
@@ -432,11 +651,17 @@ const Usuarios = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem className="gap-2">
+                                <DropdownMenuItem 
+                                  className="gap-2"
+                                  onClick={() => handleEditUsuario(usuario)}
+                                >
                                   <Edit className="w-4 h-4" />
                                   Editar
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 text-destructive">
+                                <DropdownMenuItem 
+                                  className="gap-2 text-destructive"
+                                  onClick={() => handleRemoverUsuario(usuario.id)}
+                                >
                                   <Trash2 className="w-4 h-4" />
                                   Remover
                                 </DropdownMenuItem>
