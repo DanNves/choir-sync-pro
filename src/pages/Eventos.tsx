@@ -284,34 +284,34 @@ const Eventos = () => {
                             </Badge>
                           </div>
                         </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="gap-2" onClick={() => handleViewDetails(evento)}>
-                              <Eye className="w-4 h-4" />
-                              Ver Detalhes
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2" onClick={() => handleEdit(evento)}>
-                              <Edit className="w-4 h-4" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2" onClick={() => handleGenerateQR(evento)}>
-                              <QrCode className="w-4 h-4" />
-                              Gerar QR Code
-                            </DropdownMenuItem>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem className="gap-2 text-destructive" onSelect={(e) => e.preventDefault()}>
-                                <Trash2 className="w-4 h-4" />
-                                Cancelar
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                         <AlertDialog>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem className="gap-2" onClick={() => handleViewDetails(evento)}>
+                                <Eye className="w-4 h-4" />
+                                Ver Detalhes
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="gap-2" onClick={() => handleEdit(evento)}>
+                                <Edit className="w-4 h-4" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="gap-2" onClick={() => handleGenerateQR(evento)}>
+                                <QrCode className="w-4 h-4" />
+                                Gerar QR Code
+                              </DropdownMenuItem>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem className="gap-2 text-destructive" onSelect={(e) => e.preventDefault()}>
+                                  <Trash2 className="w-4 h-4" />
+                                  Cancelar
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>Cancelar Evento</AlertDialogTitle>
