@@ -99,6 +99,16 @@ const Eventos = () => {
     status: ''
   })
 
+  const [isNewOpen, setIsNewOpen] = useState(false)
+  const [newForm, setNewForm] = useState({
+    titulo: '',
+    tipo: '',
+    data: '',
+    horario: '',
+    local: '',
+    participantes: ''
+  })
+
   // Cálculos dinâmicos para estatísticas
   const totalEventos = eventos.length
   const eventosAtivos = eventos.filter(e => e.status === 'Aberto' || e.status === 'Agendado').length
@@ -164,6 +174,88 @@ const Eventos = () => {
     setIsQrOpen(true)
   }
 
+  const handleNewEvent = () => {
+    setIsNewOpen(true)
+  }
+
+  const handleSaveNew = () => {
+    // Validações
+    if (!newForm.titulo.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "O título do evento é obrigatório.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!newForm.data) {
+      toast({
+        title: "Erro de validação", 
+        description: "A data é obrigatória.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!newForm.horario.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "O horário é obrigatório.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!newForm.local.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "O local é obrigatório.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!newForm.tipo) {
+      toast({
+        title: "Erro de validação",
+        description: "O tipo de evento deve ser selecionado.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // Criar novo evento
+    const novoEvento = {
+      id: Math.max(...eventos.map(e => e.id)) + 1,
+      titulo: newForm.titulo,
+      tipo: newForm.tipo,
+      data: newForm.data,
+      horario: newForm.horario,
+      local: newForm.local,
+      participantes: parseInt(newForm.participantes) || 0,
+      status: 'Agendado',
+      presencas: 0,
+      qrCode: false
+    }
+
+    setEventos([...eventos, novoEvento])
+    setNewForm({
+      titulo: '',
+      tipo: '',
+      data: '',
+      horario: '',
+      local: '',
+      participantes: ''
+    })
+    setIsNewOpen(false)
+    
+    toast({
+      title: "Evento criado",
+      description: "O novo evento foi criado com sucesso."
+    })
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Aberto': return 'default'
@@ -202,7 +294,7 @@ const Eventos = () => {
                     Organize ensaios, reuniões e encontros musicais
                   </p>
                 </div>
-                <Button className="gap-2">
+                <Button className="gap-2" onClick={handleNewEvent}>
                   <CalendarPlus className="w-4 h-4" />
                   Novo Evento
                 </Button>
@@ -387,56 +479,60 @@ const Eventos = () => {
                     <DialogTitle>Detalhes do Evento</DialogTitle>
                   </DialogHeader>
                   {selectedEvento && (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
+                    <div className="space-y-8">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Título</Label>
-                          <p className="text-lg font-semibold">{selectedEvento.titulo}</p>
+                          <p className="text-lg font-semibold text-foreground">{selectedEvento.titulo}</p>
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Tipo</Label>
-                          <Badge variant={getTipoColor(selectedEvento.tipo)} className="mt-1">
-                            {selectedEvento.tipo}
-                          </Badge>
+                          <div>
+                            <Badge variant={getTipoColor(selectedEvento.tipo)} className="mt-1">
+                              {selectedEvento.tipo}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Data</Label>
-                          <p>{selectedEvento.data}</p>
+                          <p className="text-base text-foreground">{selectedEvento.data}</p>
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Horário</Label>
-                          <p>{selectedEvento.horario}</p>
+                          <p className="text-base text-foreground">{selectedEvento.horario}</p>
                         </div>
                       </div>
 
-                      <div>
+                      <div className="space-y-2">
                         <Label className="text-sm font-medium text-muted-foreground">Local</Label>
-                        <p>{selectedEvento.local}</p>
+                        <p className="text-base text-foreground">{selectedEvento.local}</p>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
+                      <div className="grid grid-cols-3 gap-6">
+                        <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Status</Label>
-                          <Badge variant={getStatusColor(selectedEvento.status)} className="mt-1">
-                            {selectedEvento.status}
-                          </Badge>
+                          <div>
+                            <Badge variant={getStatusColor(selectedEvento.status)} className="mt-1">
+                              {selectedEvento.status}
+                            </Badge>
+                          </div>
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Participantes</Label>
-                          <p>{selectedEvento.participantes}</p>
+                          <p className="text-base text-foreground">{selectedEvento.participantes}</p>
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Presenças</Label>
-                          <p>{selectedEvento.presencas}</p>
+                          <p className="text-base text-foreground">{selectedEvento.presencas}</p>
                         </div>
                       </div>
 
-                      <div>
+                      <div className="space-y-2">
                         <Label className="text-sm font-medium text-muted-foreground">Taxa de Presença</Label>
-                        <p className="text-lg font-semibold">
+                        <p className="text-lg font-semibold text-foreground">
                           {selectedEvento.participantes > 0 
                             ? `${Math.round((selectedEvento.presencas / selectedEvento.participantes) * 100)}%`
                             : '0%'
@@ -445,8 +541,8 @@ const Eventos = () => {
                       </div>
 
                       {selectedEvento.qrCode && (
-                        <div className="p-4 bg-success/10 rounded-lg">
-                          <div className="flex items-center gap-2 text-success">
+                        <div className="p-4 bg-success/10 rounded-lg border border-success/20">
+                          <div className="flex items-center gap-3 text-success">
                             <QrCode className="w-5 h-5" />
                             <span className="font-medium">Check-in por QR Code disponível</span>
                           </div>
@@ -550,6 +646,92 @@ const Eventos = () => {
                       </Button>
                       <Button onClick={handleSaveEdit}>
                         Salvar Alterações
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Modal Novo Evento */}
+              <Dialog open={isNewOpen} onOpenChange={setIsNewOpen}>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Novo Evento</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="new-titulo">Título do Evento *</Label>
+                      <Input
+                        id="new-titulo"
+                        placeholder="Digite o título do evento"
+                        value={newForm.titulo}
+                        onChange={(e) => setNewForm({...newForm, titulo: e.target.value})}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="new-tipo">Tipo de Evento *</Label>
+                      <Select value={newForm.tipo} onValueChange={(value) => setNewForm({...newForm, tipo: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo de evento" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Ensaio Técnico">Ensaio Técnico</SelectItem>
+                          <SelectItem value="Avaliação">Avaliação</SelectItem>
+                          <SelectItem value="Reunião">Reunião</SelectItem>
+                          <SelectItem value="Encontro">Encontro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="new-data">Data *</Label>
+                        <Input
+                          id="new-data"
+                          type="date"
+                          value={newForm.data}
+                          onChange={(e) => setNewForm({...newForm, data: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="new-horario">Horário *</Label>
+                        <Input
+                          id="new-horario"
+                          placeholder="ex: 19:00 - 21:00"
+                          value={newForm.horario}
+                          onChange={(e) => setNewForm({...newForm, horario: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="new-local">Local *</Label>
+                      <Input
+                        id="new-local"
+                        placeholder="Digite o local do evento"
+                        value={newForm.local}
+                        onChange={(e) => setNewForm({...newForm, local: e.target.value})}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="new-participantes">Limite de Participantes</Label>
+                      <Input
+                        id="new-participantes"
+                        type="number"
+                        placeholder="0 = sem limite"
+                        value={newForm.participantes}
+                        onChange={(e) => setNewForm({...newForm, participantes: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button variant="outline" onClick={() => setIsNewOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleSaveNew}>
+                        Criar Evento
                       </Button>
                     </div>
                   </div>
