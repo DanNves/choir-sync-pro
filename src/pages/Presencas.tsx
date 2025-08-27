@@ -13,7 +13,8 @@ import {
   XCircle,
   Calendar,
   Users,
-  TrendingUp
+  TrendingUp,
+  Search
 } from "lucide-react"
 import {
   Table,
@@ -29,8 +30,31 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 const Presencas = () => {
+  const { toast } = useToast()
+  const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedParticipant, setSelectedParticipant] = useState("")
+  
   const eventoAtual = {
     titulo: "Ensaio Coral Juvenil",
     data: "2024-01-20",
@@ -41,7 +65,7 @@ const Presencas = () => {
     qrCodeAtivo: true
   }
 
-  const presencasRecentes = [
+  const [presencasRecentes, setPresencasRecentes] = useState([
     {
       id: 1,
       nome: "João Silva",
@@ -74,6 +98,18 @@ const Presencas = () => {
       status: "Presente",
       instrumento: "Piano"
     }
+  ])
+
+  // Lista de participantes do evento
+  const participantesEvento = [
+    { id: 5, nome: "Carlos Mendes", instrumento: "Guitarra" },
+    { id: 6, nome: "Lucia Ferreira", instrumento: "Flauta" },
+    { id: 7, nome: "Roberto Silva", instrumento: "Saxofone" },
+    { id: 8, nome: "Helena Costa", instrumento: "Violino" },
+    { id: 9, nome: "Eduardo Santos", instrumento: "Trompete" },
+    { id: 10, nome: "Fernanda Lima", instrumento: "Clarinete" },
+    { id: 11, nome: "André Oliveira", instrumento: "Teclado" },
+    // Adicionar mais participantes conforme necessário
   ]
 
   const historicoEventos = [
@@ -113,6 +149,72 @@ const Presencas = () => {
     return 'text-destructive'
   }
 
+  // Função para verificar se participante já fez check-in
+  const jaFezCheckin = (nomeParticipante: string) => {
+    return presencasRecentes.some(presenca => presenca.nome === nomeParticipante)
+  }
+
+  // Função para realizar check-in manual
+  const handleCheckinManual = () => {
+    if (!selectedParticipant) {
+      toast({
+        title: "Erro",
+        description: "Selecione um participante para fazer o check-in.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const participanteSelecionado = participantesEvento.find(p => p.id.toString() === selectedParticipant)
+    
+    if (!participanteSelecionado) {
+      toast({
+        title: "Erro", 
+        description: "Participante não encontrado.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Verificar se já fez check-in
+    if (jaFezCheckin(participanteSelecionado.nome)) {
+      toast({
+        title: "Check-in Duplicado",
+        description: `${participanteSelecionado.nome} já fez check-in para este evento.`,
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Adicionar nova presença
+    const novaPresenca = {
+      id: presencasRecentes.length + 1,
+      nome: participanteSelecionado.nome,
+      horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      metodo: "Manual",
+      status: "Presente",
+      instrumento: participanteSelecionado.instrumento
+    }
+
+    setPresencasRecentes(prev => [novaPresenca, ...prev])
+    
+    toast({
+      title: "Check-in Realizado",
+      description: `${participanteSelecionado.nome} foi marcado como presente.`,
+    })
+
+    // Limpar e fechar modal
+    setSelectedParticipant("")
+    setSearchTerm("")
+    setIsCheckinModalOpen(false)
+  }
+
+  // Filtrar participantes disponíveis (que ainda não fizeram check-in)
+  const participantesDisponiveis = participantesEvento.filter(participante => 
+    !jaFezCheckin(participante.nome) && 
+    participante.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -131,10 +233,77 @@ const Presencas = () => {
                     Monitore presenças em tempo real e histórico de participação
                   </p>
                 </div>
-                <Button className="gap-2">
-                  <UserCheck className="w-4 h-4" />
-                  Check-in Manual
-                </Button>
+                <Dialog open={isCheckinModalOpen} onOpenChange={setIsCheckinModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2">
+                      <UserCheck className="w-4 h-4" />
+                      Check-in Manual
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Check-in Manual</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="search">Buscar Participante</Label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                          <Input
+                            id="search"
+                            placeholder="Digite o nome do participante..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="participant">Selecionar Participante</Label>
+                        <Select value={selectedParticipant} onValueChange={setSelectedParticipant}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Escolha um participante disponível" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {participantesDisponiveis.length > 0 ? (
+                              participantesDisponiveis.map((participante) => (
+                                <SelectItem key={participante.id} value={participante.id.toString()}>
+                                  <div className="flex justify-between items-center w-full">
+                                    <span>{participante.nome}</span>
+                                    <span className="text-muted-foreground text-sm ml-2">
+                                      {participante.instrumento}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="none" disabled>
+                                {searchTerm ? "Nenhum participante encontrado" : "Todos já fizeram check-in"}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setIsCheckinModalOpen(false)
+                            setSelectedParticipant("")
+                            setSearchTerm("")
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button onClick={handleCheckinManual}>
+                          Confirmar Check-in
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {/* Evento Atual */}
