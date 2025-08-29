@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
@@ -6,6 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useToast } from "@/hooks/use-toast"
 import { 
   Music, 
   Users, 
@@ -16,7 +22,8 @@ import {
   MoreHorizontal,
   Edit,
   UserPlus,
-  Settings
+  Settings,
+  X
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -24,9 +31,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 const Equipes = () => {
-  const equipes = [
+  const { toast } = useToast()
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [equipes, setEquipes] = useState([
     {
       id: 1,
       nome: "Coral Juvenil",
@@ -71,7 +89,97 @@ const Equipes = () => {
       ultimoEnsaio: "Sab, 15:00",
       proximoEvento: "Avaliação - Dom, 16:00"
     }
+  ])
+
+  // Form state
+  const [formData, setFormData] = useState({
+    nome: '',
+    lider: '',
+    instrumentos: [] as string[],
+    descricao: ''
+  })
+
+  const instrumentosDisponiveis = [
+    'Vocal', 'Piano', 'Violão', 'Guitarra', 'Baixo', 'Bateria', 
+    'Teclado', 'Órgão', 'Violino', 'Viola', 'Violoncelo', 'Flauta',
+    'Clarinete', 'Saxofone', 'Trompete', 'Trombone'
   ]
+
+  const handleInstrumentChange = (instrumento: string, checked: boolean) => {
+    if (checked) {
+      setFormData(prev => ({
+        ...prev,
+        instrumentos: [...prev.instrumentos, instrumento]
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        instrumentos: prev.instrumentos.filter(i => i !== instrumento)
+      }))
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validações
+    if (!formData.nome.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome da equipe é obrigatório",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!formData.lider.trim()) {
+      toast({
+        title: "Erro", 
+        description: "Uma equipe precisa ter pelo menos um líder",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (formData.instrumentos.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Selecione pelo menos um instrumento para a equipe",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // Criar nova equipe
+    const novaEquipe = {
+      id: equipes.length + 1,
+      nome: formData.nome,
+      lider: formData.lider,
+      membros: 1, // Começa com o líder
+      instrumentos: formData.instrumentos,
+      desempenho: 0,
+      status: "Ativa" as const,
+      ultimoEnsaio: "Nenhum ainda",
+      proximoEvento: "A definir"
+    }
+
+    setEquipes(prev => [...prev, novaEquipe])
+    
+    toast({
+      title: "Sucesso",
+      description: "Equipe criada com sucesso!",
+    })
+
+    // Reset form
+    setFormData({
+      nome: '',
+      lider: '',
+      instrumentos: [],
+      descricao: ''
+    })
+    
+    setDialogOpen(false)
+  }
 
   const membrosDestaque = [
     {
@@ -132,10 +240,114 @@ const Equipes = () => {
                     Organize grupos musicais e acompanhe o desempenho das equipes
                   </p>
                 </div>
-                <Button className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Nova Equipe
-                </Button>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Nova Equipe
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px]">
+                    <form onSubmit={handleSubmit}>
+                      <DialogHeader>
+                        <DialogTitle>Criar Nova Equipe</DialogTitle>
+                        <DialogDescription>
+                          Preencha os dados para criar uma nova equipe musical
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-6 py-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="nome">Nome da Equipe *</Label>
+                          <Input
+                            id="nome"
+                            value={formData.nome}
+                            onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+                            placeholder="Ex: Coral Juvenil, Banda de Louvor..."
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="lider">Líder da Equipe *</Label>
+                          <Input
+                            id="lider"
+                            value={formData.lider}
+                            onChange={(e) => setFormData(prev => ({ ...prev, lider: e.target.value }))}
+                            placeholder="Nome completo do líder"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-3">
+                          <Label>Instrumentos da Equipe *</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Selecione os instrumentos que serão utilizados por esta equipe
+                          </p>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto">
+                            {instrumentosDisponiveis.map((instrumento) => (
+                              <div key={instrumento} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={instrumento}
+                                  checked={formData.instrumentos.includes(instrumento)}
+                                  onCheckedChange={(checked) => 
+                                    handleInstrumentChange(instrumento, checked as boolean)
+                                  }
+                                />
+                                <Label 
+                                  htmlFor={instrumento}
+                                  className="text-sm font-normal cursor-pointer"
+                                >
+                                  {instrumento}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                          {formData.instrumentos.length > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-2">
+                              {formData.instrumentos.map((instrumento) => (
+                                <Badge key={instrumento} variant="secondary" className="gap-1">
+                                  {instrumento}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleInstrumentChange(instrumento, false)}
+                                    className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="descricao">Descrição (Opcional)</Label>
+                          <Textarea
+                            id="descricao"
+                            value={formData.descricao}
+                            onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))}
+                            placeholder="Descreva os objetivos e características da equipe..."
+                            rows={3}
+                          />
+                        </div>
+                      </div>
+
+                      <DialogFooter>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setDialogOpen(false)}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button type="submit">
+                          Criar Equipe
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {/* Stats Cards */}
