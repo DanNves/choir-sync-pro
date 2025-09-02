@@ -6,11 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { 
   Music, 
@@ -22,8 +17,7 @@ import {
   MoreHorizontal,
   Edit,
   UserPlus,
-  Settings,
-  X
+  Settings
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -31,196 +25,213 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { CreateTeamModal } from "@/components/team/CreateTeamModal"
+import { EditTeamModal } from "@/components/team/EditTeamModal"
+import { AddMemberModal } from "@/components/team/AddMemberModal"
+import { TeamSettingsModal } from "@/components/team/TeamSettingsModal"
+
+// Mock users data - in a real app this would come from an API
+const mockUsers = [
+  {
+    id: 1,
+    nome: "João Silva",
+    email: "joao.silva@email.com",
+    papel: "Músico",
+    local: "Centro - São Paulo - SP - Brasil",
+    status: "Ativo",
+    instrumento: "Violão",
+    ultimoAcesso: "Hoje, 14:30"
+  },
+  {
+    id: 2,
+    nome: "Maria Santos",
+    email: "maria.santos@email.com", 
+    papel: "Organista",
+    local: "Centro - Salvador - BA - Brasil",
+    status: "Ativo",
+    instrumento: "Órgão",
+    ultimoAcesso: "Ontem, 19:45"
+  },
+  {
+    id: 3,
+    nome: "Pedro Costa",
+    email: "pedro.costa@email.com",
+    papel: "Ancião",
+    local: "Norte - Rio de Janeiro - RJ - Brasil",
+    status: "Ativo",  // Changed to Active for demo
+    instrumento: "Vocal",  // Changed for demo
+    ultimoAcesso: "2 dias atrás"
+  },
+  {
+    id: 4,
+    nome: "Ana Oliveira",
+    email: "ana.oliveira@email.com",
+    papel: "Instrutor",
+    local: "Centro - Belo Horizonte - MG - Brasil", 
+    status: "Ativo",
+    instrumento: "Piano",
+    ultimoAcesso: "Hoje, 16:20"
+  },
+  {
+    id: 5,
+    nome: "Carlos Lima",
+    email: "carlos.lima@email.com",
+    papel: "Músico",
+    local: "Sul - Porto Alegre - RS - Brasil",
+    status: "Ativo",
+    instrumento: "Violino",
+    ultimoAcesso: "Hoje, 18:00"
+  },
+  {
+    id: 6,
+    nome: "Fernanda Rocha",
+    email: "fernanda.rocha@email.com",
+    papel: "Encarregado",
+    local: "Centro - Brasília - DF - Brasil",
+    status: "Ativo",
+    instrumento: "Flauta",
+    ultimoAcesso: "Ontem, 15:30"
+  },
+  {
+    id: 7,
+    nome: "Roberto Mendes",
+    email: "roberto.mendes@email.com",
+    papel: "Músico",
+    local: "Norte - Fortaleza - CE - Brasil",
+    status: "Ativo",
+    instrumento: "Bateria",
+    ultimoAcesso: "Hoje, 12:45"
+  },
+  {
+    id: 8,
+    nome: "Juliana Alves",
+    email: "juliana.alves@email.com",
+    papel: "Músico",
+    local: "Centro - Recife - PE - Brasil",
+    status: "Ativo",
+    instrumento: "Vocal",
+    ultimoAcesso: "Hoje, 20:10"
+  }
+]
+
+interface TeamMember {
+  userId: number
+  nome: string
+  instrumento: string
+}
+
+interface Team {
+  id: string
+  name: string
+  leaderId: number
+  limit: number
+  members: TeamMember[]
+  description?: string
+  status: string
+  ultimoEnsaio: string
+  proximoEvento: string
+}
 
 const Equipes = () => {
   const { toast } = useToast()
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [equipes, setEquipes] = useState([
+  
+  // Modal states
+  const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [addMemberModalOpen, setAddMemberModalOpen] = useState(false)
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
+
+  // Initial teams data following the requested structure
+  const [equipes, setEquipes] = useState<Team[]>([
     {
-      id: 1,
-      nome: "Coral Juvenil",
-      lider: "João Silva",
-      membros: 45,
-      instrumentos: ["Vocal", "Piano", "Violão"],
-      desempenho: 92.5,
+      id: "team1",
+      name: "Coral Juvenil",
+      leaderId: 2,
+      limit: 15,
+      members: [
+        { userId: 2, nome: "Maria Santos", instrumento: "Órgão" },
+        { userId: 1, nome: "João Silva", instrumento: "Violão" },
+        { userId: 8, nome: "Juliana Alves", instrumento: "Vocal" }
+      ],
+      description: "Coral dedicado aos jovens da congregação",
       status: "Ativa",
       ultimoEnsaio: "Hoje, 19:00",
       proximoEvento: "Apresentação - Dom, 14:00"
     },
     {
-      id: 2,
-      nome: "Banda de Instrumentistas", 
-      lider: "Maria Santos",
-      membros: 23,
-      instrumentos: ["Bateria", "Baixo", "Guitarra", "Teclado"],
-      desempenho: 89.2,
-      status: "Ativa", 
+      id: "team2",
+      name: "Banda de Instrumentistas",
+      leaderId: 4,
+      limit: 10,
+      members: [
+        { userId: 4, nome: "Ana Oliveira", instrumento: "Piano" },
+        { userId: 7, nome: "Roberto Mendes", instrumento: "Bateria" },
+        { userId: 5, nome: "Carlos Lima", instrumento: "Violino" }
+      ],
+      description: "Grupo instrumental para acompanhamento musical",
+      status: "Ativa",
       ultimoEnsaio: "Ontem, 20:00",
       proximoEvento: "Ensaio - Qua, 19:30"
-    },
-    {
-      id: 3,
-      nome: "Coral Adulto",
-      lider: "Pedro Costa",
-      membros: 67,
-      instrumentos: ["Vocal", "Órgão"],
-      desempenho: 95.8,
-      status: "Ativa",
-      ultimoEnsaio: "Ter, 19:00", 
-      proximoEvento: "Reunião - Sex, 20:00"
-    },
-    {
-      id: 4,
-      nome: "Orquestra Regional",
-      lider: "Ana Oliveira",
-      membros: 34,
-      instrumentos: ["Violino", "Viola", "Violoncelo", "Flauta"],
-      desempenho: 87.4,
-      status: "Ativa",
-      ultimoEnsaio: "Sab, 15:00",
-      proximoEvento: "Avaliação - Dom, 16:00"
     }
   ])
 
-  // Form state
-  const [formData, setFormData] = useState({
-    nome: '',
-    lider: '',
-    instrumentos: [] as string[],
-    descricao: ''
-  })
-
-  const instrumentosDisponiveis = [
-    'Vocal', 'Piano', 'Violão', 'Guitarra', 'Baixo', 'Bateria', 
-    'Teclado', 'Órgão', 'Violino', 'Viola', 'Violoncelo', 'Flauta',
-    'Clarinete', 'Saxofone', 'Trompete', 'Trombone'
-  ]
-
-  const handleInstrumentChange = (instrumento: string, checked: boolean) => {
-    if (checked) {
-      setFormData(prev => ({
-        ...prev,
-        instrumentos: [...prev.instrumentos, instrumento]
-      }))
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        instrumentos: prev.instrumentos.filter(i => i !== instrumento)
-      }))
-    }
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Validações
-    if (!formData.nome.trim()) {
-      toast({
-        title: "Erro",
-        description: "Nome da equipe é obrigatório",
-        variant: "destructive"
-      })
-      return
-    }
-
-    if (!formData.lider.trim()) {
-      toast({
-        title: "Erro", 
-        description: "Uma equipe precisa ter pelo menos um líder",
-        variant: "destructive"
-      })
-      return
-    }
-
-    if (formData.instrumentos.length === 0) {
-      toast({
-        title: "Erro",
-        description: "Selecione pelo menos um instrumento para a equipe",
-        variant: "destructive"
-      })
-      return
-    }
-
-    // Criar nova equipe
-    const novaEquipe = {
-      id: equipes.length + 1,
-      nome: formData.nome,
-      lider: formData.lider,
-      membros: 1, // Começa com o líder
-      instrumentos: formData.instrumentos,
-      desempenho: 0,
-      status: "Ativa" as const,
+  const handleTeamCreate = (teamData: Omit<Team, 'id'>) => {
+    const newTeam: Team = {
+      ...teamData,
+      id: `team${Date.now()}`,
+      status: "Ativa",
       ultimoEnsaio: "Nenhum ainda",
       proximoEvento: "A definir"
     }
-
-    setEquipes(prev => [...prev, novaEquipe])
-    
-    toast({
-      title: "Sucesso",
-      description: "Equipe criada com sucesso!",
-    })
-
-    // Reset form
-    setFormData({
-      nome: '',
-      lider: '',
-      instrumentos: [],
-      descricao: ''
-    })
-    
-    setDialogOpen(false)
+    setEquipes(prev => [...prev, newTeam])
   }
 
-  const membrosDestaque = [
-    {
-      id: 1,
-      nome: "João Silva",
-      equipe: "Coral Juvenil", 
-      papel: "Líder",
-      instrumento: "Vocal/Piano",
-      presenca: 98.5,
-      pontuacao: 2450
-    },
-    {
-      id: 2,
-      nome: "Maria Santos",
-      equipe: "Banda de Instrumentistas",
-      papel: "Líder", 
-      instrumento: "Órgão",
-      presenca: 97.2,
-      pontuacao: 2380
-    },
-    {
-      id: 3,
-      nome: "Carlos Lima",
-      equipe: "Coral Adulto",
-      papel: "Membro",
-      instrumento: "Vocal",
-      presenca: 96.8,
-      pontuacao: 2290
+  const handleTeamUpdate = (updatedTeam: Team) => {
+    setEquipes(prev => prev.map(team => 
+      team.id === updatedTeam.id ? updatedTeam : team
+    ))
+  }
+
+  const handleAddMembers = (memberIds: number[]) => {
+    if (!selectedTeam) return
+
+    const newMembers: TeamMember[] = memberIds.map(userId => {
+      const user = mockUsers.find(u => u.id === userId)!
+      return {
+        userId: user.id,
+        nome: user.nome,
+        instrumento: user.instrumento
+      }
+    })
+
+    const updatedTeam = {
+      ...selectedTeam,
+      members: [...selectedTeam.members, ...newMembers]
     }
-  ]
 
-  const getDesempenhoColor = (desempenho: number) => {
-    if (desempenho >= 95) return 'text-success'
-    if (desempenho >= 90) return 'text-primary'
-    if (desempenho >= 85) return 'text-warning'
-    return 'text-destructive'
+    handleTeamUpdate(updatedTeam)
   }
 
-  const getPapelIcon = (papel: string) => {
-    return papel === 'Líder' ? Crown : Star
+  const openEditModal = (team: Team) => {
+    setSelectedTeam(team)
+    setEditModalOpen(true)
   }
+
+  const openAddMemberModal = (team: Team) => {
+    setSelectedTeam(team)
+    setAddMemberModalOpen(true)
+  }
+
+  const openSettingsModal = (team: Team) => {
+    setSelectedTeam(team)
+    setSettingsModalOpen(true)
+  }
+
+  // Statistics calculations
+  const totalMembers = equipes.reduce((acc, team) => acc + team.members.length, 0)
+  const totalLeaders = equipes.length
+  const averagePerformance = 91.2 // Mock value
 
   return (
     <SidebarProvider>
@@ -240,114 +251,10 @@ const Equipes = () => {
                     Organize grupos musicais e acompanhe o desempenho das equipes
                   </p>
                 </div>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Nova Equipe
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px]">
-                    <form onSubmit={handleSubmit}>
-                      <DialogHeader>
-                        <DialogTitle>Criar Nova Equipe</DialogTitle>
-                        <DialogDescription>
-                          Preencha os dados para criar uma nova equipe musical
-                        </DialogDescription>
-                      </DialogHeader>
-                      
-                      <div className="space-y-6 py-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="nome">Nome da Equipe *</Label>
-                          <Input
-                            id="nome"
-                            value={formData.nome}
-                            onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-                            placeholder="Ex: Coral Juvenil, Banda de Louvor..."
-                            required
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="lider">Líder da Equipe *</Label>
-                          <Input
-                            id="lider"
-                            value={formData.lider}
-                            onChange={(e) => setFormData(prev => ({ ...prev, lider: e.target.value }))}
-                            placeholder="Nome completo do líder"
-                            required
-                          />
-                        </div>
-
-                        <div className="space-y-3">
-                          <Label>Instrumentos da Equipe *</Label>
-                          <p className="text-sm text-muted-foreground">
-                            Selecione os instrumentos que serão utilizados por esta equipe
-                          </p>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto">
-                            {instrumentosDisponiveis.map((instrumento) => (
-                              <div key={instrumento} className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={instrumento}
-                                  checked={formData.instrumentos.includes(instrumento)}
-                                  onCheckedChange={(checked) => 
-                                    handleInstrumentChange(instrumento, checked as boolean)
-                                  }
-                                />
-                                <Label 
-                                  htmlFor={instrumento}
-                                  className="text-sm font-normal cursor-pointer"
-                                >
-                                  {instrumento}
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
-                          {formData.instrumentos.length > 0 && (
-                            <div className="flex flex-wrap gap-1 pt-2">
-                              {formData.instrumentos.map((instrumento) => (
-                                <Badge key={instrumento} variant="secondary" className="gap-1">
-                                  {instrumento}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleInstrumentChange(instrumento, false)}
-                                    className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="descricao">Descrição (Opcional)</Label>
-                          <Textarea
-                            id="descricao"
-                            value={formData.descricao}
-                            onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))}
-                            placeholder="Descreva os objetivos e características da equipe..."
-                            rows={3}
-                          />
-                        </div>
-                      </div>
-
-                      <DialogFooter>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => setDialogOpen(false)}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button type="submit">
-                          Criar Equipe
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                <Button className="gap-2" onClick={() => setCreateModalOpen(true)}>
+                  <Plus className="w-4 h-4" />
+                  Nova Equipe
+                </Button>
               </div>
 
               {/* Stats Cards */}
@@ -360,7 +267,7 @@ const Equipes = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Equipes Ativas</p>
-                        <p className="text-2xl font-bold text-foreground">4</p>
+                        <p className="text-2xl font-bold text-foreground">{equipes.length}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -374,7 +281,7 @@ const Equipes = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Total Membros</p>
-                        <p className="text-2xl font-bold text-foreground">169</p>
+                        <p className="text-2xl font-bold text-foreground">{totalMembers}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -388,7 +295,7 @@ const Equipes = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Desempenho Médio</p>
-                        <p className="text-2xl font-bold text-foreground">91.2%</p>
+                        <p className="text-2xl font-bold text-foreground">{averagePerformance}%</p>
                       </div>
                     </div>
                   </CardContent>
@@ -402,7 +309,7 @@ const Equipes = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Líderes</p>
-                        <p className="text-2xl font-bold text-foreground">4</p>
+                        <p className="text-2xl font-bold text-foreground">{totalLeaders}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -411,150 +318,197 @@ const Equipes = () => {
 
               {/* Teams Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {equipes.map((equipe) => (
-                  <Card key={equipe.id} className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                          <CardTitle className="text-lg">{equipe.nome}</CardTitle>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="default">
-                              {equipe.status}
-                            </Badge>
-                            <Badge variant="outline" className="gap-1">
-                              <Users className="w-3 h-3" />
-                              {equipe.membros} membros
-                            </Badge>
-                          </div>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="gap-2">
-                              <Edit className="w-4 h-4" />
-                              Editar Equipe
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2">
-                              <UserPlus className="w-4 h-4" />
-                              Adicionar Membro
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2">
-                              <Settings className="w-4 h-4" />
-                              Configurações
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground mb-2">Líder</p>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-8 h-8">
-                              <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                {equipe.lider.split(' ').map(n => n[0]).join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="font-medium text-foreground">{equipe.lider}</span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <p className="text-sm text-muted-foreground mb-2">Instrumentos</p>
-                          <div className="flex flex-wrap gap-1">
-                            {equipe.instrumentos.map((instrumento) => (
-                              <Badge key={instrumento} variant="outline" className="text-xs">
-                                {instrumento}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm text-muted-foreground">Desempenho</span>
-                            <span className={`text-sm font-medium ${getDesempenhoColor(equipe.desempenho)}`}>
-                              {equipe.desempenho}%
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="pt-2 border-t border-border/50 space-y-1">
-                          <p className="text-xs text-muted-foreground">
-                            <strong>Último ensaio:</strong> {equipe.ultimoEnsaio}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            <strong>Próximo evento:</strong> {equipe.proximoEvento}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Top Members */}
-              <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-primary" />
-                    Membros em Destaque
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {membrosDestaque.map((membro, index) => (
-                      <div key={membro.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-sm font-bold text-primary">
-                              #{index + 1}
-                            </div>
-                            <Avatar>
-                              <AvatarFallback className="bg-primary/10 text-primary">
-                                {membro.nome.split(' ').map(n => n[0]).join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                          </div>
-                          <div>
+                {equipes.map((equipe) => {
+                  const leader = mockUsers.find(u => u.id === equipe.leaderId)
+                  const instrumentos = [...new Set(equipe.members.map(m => m.instrumento))]
+                  
+                  return (
+                    <Card key={equipe.id} className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2">
+                            <CardTitle className="text-lg">{equipe.name}</CardTitle>
                             <div className="flex items-center gap-2">
-                              <h4 className="font-medium text-foreground">{membro.nome}</h4>
-                              <div className="flex items-center gap-1">
-                                {React.createElement(getPapelIcon(membro.papel), {
-                                  className: "w-4 h-4 text-accent"
-                                })}
-                                <Badge variant="secondary" className="text-xs">
-                                  {membro.papel}
+                              <Badge variant="default">
+                                {equipe.status}
+                              </Badge>
+                              <Badge variant="outline" className="gap-1">
+                                <Users className="w-3 h-3" />
+                                {equipe.members.length}/{equipe.limit} membros
+                              </Badge>
+                            </div>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem 
+                                className="gap-2" 
+                                onClick={() => openEditModal(equipe)}
+                              >
+                                <Edit className="w-4 h-4" />
+                                Editar Equipe
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="gap-2"
+                                onClick={() => openAddMemberModal(equipe)}
+                              >
+                                <UserPlus className="w-4 h-4" />
+                                Adicionar Membro
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="gap-2"
+                                onClick={() => openSettingsModal(equipe)}
+                              >
+                                <Settings className="w-4 h-4" />
+                                Configurações
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Leader */}
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-2">Líder</p>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-8 h-8">
+                                <AvatarFallback className="text-xs bg-warning/10 text-warning">
+                                  {leader ? leader.nome.split(' ').map(n => n[0]).join('') : '?'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium text-foreground">
+                                {leader ? leader.nome : 'Líder não encontrado'}
+                              </span>
+                              <Crown className="w-4 h-4 text-warning" />
+                            </div>
+                          </div>
+
+                          {/* Instruments */}
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              Instrumentos ({instrumentos.length})
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {instrumentos.slice(0, 3).map((instrumento) => (
+                                <Badge key={instrumento} variant="secondary" className="text-xs">
+                                  {instrumento}
                                 </Badge>
+                              ))}
+                              {instrumentos.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{instrumentos.length - 3} mais
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Members Preview */}
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-2">Membros Recentes</p>
+                            <div className="flex -space-x-2">
+                              {equipe.members.slice(0, 4).map((member) => (
+                                <Avatar key={member.userId} className="w-6 h-6 border-2 border-background">
+                                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                    {member.nome.split(' ').map(n => n[0]).join('')}
+                                  </AvatarFallback>
+                                </Avatar>
+                              ))}
+                              {equipe.members.length > 4 && (
+                                <div className="w-6 h-6 bg-muted rounded-full border-2 border-background flex items-center justify-center">
+                                  <span className="text-xs text-muted-foreground">
+                                    +{equipe.members.length - 4}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Events */}
+                          <div className="pt-2 border-t">
+                            <div className="grid grid-cols-2 gap-4 text-xs">
+                              <div>
+                                <p className="text-muted-foreground">Último Ensaio</p>
+                                <p className="font-medium">{equipe.ultimoEnsaio}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Próximo Evento</p>
+                                <p className="font-medium">{equipe.proximoEvento}</p>
                               </div>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              {membro.equipe} • {membro.instrumento}
-                            </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium text-foreground">{membro.pontuacao} pts</p>
-                          <p className="text-sm text-muted-foreground">
-                            {membro.presenca}% presença
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+
+              {/* Empty State */}
+              {equipes.length === 0 && (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Nenhuma equipe criada</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Comece criando sua primeira equipe musical
+                    </p>
+                    <Button onClick={() => setCreateModalOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Criar Primeira Equipe
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </main>
         </div>
       </div>
+
+      {/* Modals */}
+      <CreateTeamModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        onTeamCreate={handleTeamCreate}
+        users={mockUsers}
+      />
+
+      <EditTeamModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        onTeamUpdate={handleTeamUpdate}
+        users={mockUsers}
+        team={selectedTeam}
+      />
+
+      <AddMemberModal
+        open={addMemberModalOpen}
+        onOpenChange={setAddMemberModalOpen}
+        onAddMembers={handleAddMembers}
+        users={mockUsers}
+        team={selectedTeam}
+      />
+
+      <TeamSettingsModal
+        open={settingsModalOpen}
+        onOpenChange={setSettingsModalOpen}
+        team={selectedTeam}
+        users={mockUsers}
+        onEditTeam={() => {
+          setSettingsModalOpen(false)
+          openEditModal(selectedTeam!)
+        }}
+        onAddMember={() => {
+          setSettingsModalOpen(false)
+          openAddMemberModal(selectedTeam!)
+        }}
+      />
     </SidebarProvider>
-  );
-};
+  )
+}
 
 export default Equipes;
