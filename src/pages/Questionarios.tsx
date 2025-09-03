@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
@@ -15,7 +16,8 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  MoreHorizontal
+  MoreHorizontal,
+  Play
 } from "lucide-react"
 import {
   Table,
@@ -37,9 +39,26 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { CreateQuestionarioModal } from "@/components/questionarios/CreateQuestionarioModal"
+import { EditQuestionarioModal } from "@/components/questionarios/EditQuestionarioModal"
+import { QuestionarioResponseModal } from "@/components/questionarios/QuestionarioResponseModal"
+import { useToast } from "@/hooks/use-toast"
 
 const Questionarios = () => {
-  const questionarios = [
+  const [questionarios, setQuestionarios] = useState<Array<{
+    id: number;
+    titulo: string;
+    evento: string;
+    dataEvento: string;
+    tipo: string;
+    questoes: number;
+    participantes: number;
+    respostas: number;
+    status: string;
+    prazo: string;
+    mediaNotas: number;
+    fullData?: any;
+  }>>([
     {
       id: 1,
       titulo: "Avaliação Técnica - Violão Básico",
@@ -92,7 +111,13 @@ const Questionarios = () => {
       prazo: "2024-01-26 18:00",
       mediaNotas: 0
     }
-  ]
+  ])
+
+  const [editingQuestionario, setEditingQuestionario] = useState<any>(null)
+  const [respondingQuestionario, setRespondingQuestionario] = useState<any>(null)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [responseModalOpen, setResponseModalOpen] = useState(false)
+  const { toast } = useToast()
 
   const respostasRecentes = [
     {
@@ -147,6 +172,58 @@ const Questionarios = () => {
     return 'text-destructive'
   }
 
+  const handleCreateQuestionario = (novoQuestionario: any) => {
+    setQuestionarios(prev => [...prev, {
+      id: novoQuestionario.id,
+      titulo: novoQuestionario.title,
+      evento: "Evento Selecionado", // This should come from the event selection
+      dataEvento: new Date().toISOString().split('T')[0],
+      tipo: novoQuestionario.questions.some((q: any) => q.type === 'scale') ? "Técnico" : 
+            novoQuestionario.questions.some((q: any) => q.type === 'boolean') ? "Teórico" : "Feedback",
+      questoes: novoQuestionario.questions.length,
+      participantes: 0,
+      respostas: 0,
+      status: "Agendado",
+      prazo: new Date(novoQuestionario.endDate).toLocaleString(),
+      mediaNotas: 0,
+      fullData: novoQuestionario
+    }])
+  }
+
+  const handleUpdateQuestionario = (updatedQuestionario: any) => {
+    setQuestionarios(prev => prev.map(q => 
+      q.id === updatedQuestionario.id 
+        ? {
+            ...q,
+            titulo: updatedQuestionario.title,
+            questoes: updatedQuestionario.questions.length,
+            prazo: new Date(updatedQuestionario.endDate).toLocaleString(),
+            fullData: updatedQuestionario
+          }
+        : q
+    ))
+  }
+
+  const handleSubmitResponse = (questionarioId: string, responses: Record<string, any>) => {
+    setQuestionarios(prev => prev.map(q => 
+      q.id.toString() === questionarioId 
+        ? { ...q, respostas: q.respostas + 1 }
+        : q
+    ))
+  }
+
+  const handleDeleteQuestionario = (id: number) => {
+    setQuestionarios(prev => prev.filter(q => q.id !== id))
+    toast({
+      title: "Questionário excluído",
+      description: "O questionário foi removido com sucesso"
+    })
+  }
+
+  const canRespond = (questionario: any) => {
+    return questionario.status === "Ativo"
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -165,10 +242,12 @@ const Questionarios = () => {
                     Crie avaliações técnicas e colete feedback dos participantes
                   </p>
                 </div>
-                <Button className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Novo Questionário
-                </Button>
+                <CreateQuestionarioModal onCreateQuestionario={handleCreateQuestionario}>
+                  <Button className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Novo Questionário
+                  </Button>
+                </CreateQuestionarioModal>
               </div>
 
               {/* Stats Cards */}
@@ -261,15 +340,54 @@ const Questionarios = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
+                                {canRespond(questionario) && (
+                                  <DropdownMenuItem 
+                                    className="gap-2"
+                                    onClick={() => {
+                                      setRespondingQuestionario(questionario.fullData || {
+                                        id: questionario.id.toString(),
+                                        title: questionario.titulo,
+                                        description: "Questionário de avaliação",
+                                        questions: [], // This would need to come from stored data
+                                        startDate: new Date().toISOString(),
+                                        endDate: new Date().toISOString()
+                                      })
+                                      setResponseModalOpen(true)
+                                    }}
+                                  >
+                                    <Play className="w-4 h-4" />
+                                    Responder
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem className="gap-2">
                                   <Eye className="w-4 h-4" />
                                   Ver Respostas
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2">
+                                <DropdownMenuItem 
+                                  className="gap-2"
+                                  onClick={() => {
+                                    setEditingQuestionario(questionario.fullData || {
+                                      id: questionario.id.toString(),
+                                      title: questionario.titulo,
+                                      description: "Questionário de avaliação",
+                                      eventId: "e1",
+                                      type: "individual",
+                                      questions: [],
+                                      startDate: new Date().toISOString(),
+                                      endDate: new Date().toISOString(),
+                                      status: questionario.status,
+                                      responses: []
+                                    })
+                                    setEditModalOpen(true)
+                                  }}
+                                >
                                   <Edit className="w-4 h-4" />
                                   Editar
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="gap-2 text-destructive">
+                                <DropdownMenuItem 
+                                  className="gap-2 text-destructive"
+                                  onClick={() => handleDeleteQuestionario(questionario.id)}
+                                >
                                   <Trash2 className="w-4 h-4" />
                                   Excluir
                                 </DropdownMenuItem>
@@ -382,6 +500,21 @@ const Questionarios = () => {
           </main>
         </div>
       </div>
+
+      {/* Modals */}
+      <EditQuestionarioModal 
+        questionario={editingQuestionario}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        onUpdateQuestionario={handleUpdateQuestionario}
+      />
+      
+      <QuestionarioResponseModal 
+        questionario={respondingQuestionario}
+        open={responseModalOpen}
+        onOpenChange={setResponseModalOpen}
+        onSubmitResponse={handleSubmitResponse}
+      />
     </SidebarProvider>
   );
 };
