@@ -42,6 +42,7 @@ import {
 import { CreateQuestionarioModal } from "@/components/questionarios/CreateQuestionarioModal"
 import { EditQuestionarioModal } from "@/components/questionarios/EditQuestionarioModal"
 import { QuestionarioResponseModal } from "@/components/questionarios/QuestionarioResponseModal"
+import { ViewResponsesModal } from "@/components/questionarios/ViewResponsesModal"
 import { useToast } from "@/hooks/use-toast"
 
 const Questionarios = () => {
@@ -115,8 +116,10 @@ const Questionarios = () => {
 
   const [editingQuestionario, setEditingQuestionario] = useState<any>(null)
   const [respondingQuestionario, setRespondingQuestionario] = useState<any>(null)
+  const [viewingQuestionario, setViewingQuestionario] = useState<any>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [responseModalOpen, setResponseModalOpen] = useState(false)
+  const [viewResponsesModalOpen, setViewResponsesModalOpen] = useState(false)
   const { toast } = useToast()
 
   const respostasRecentes = [
@@ -359,7 +362,23 @@ const Questionarios = () => {
                                     Responder
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem className="gap-2">
+                                <DropdownMenuItem 
+                                  className="gap-2"
+                                  onClick={() => {
+                                    setViewingQuestionario(questionario.fullData || {
+                                      id: questionario.id.toString(),
+                                      title: questionario.titulo,
+                                      description: "Questionário de avaliação",
+                                      questions: [
+                                        { id: "p1", text: "Afinou corretamente antes do ensaio?", type: "boolean", weight: 2, required: true },
+                                        { id: "p2", text: "Como avalia sua pontualidade?", type: "scale", weight: 3, required: true },
+                                        { id: "p3", text: "Comentários gerais sobre o ensaio:", type: "text", weight: 1, required: false },
+                                        { id: "p4", text: "Qual sua avaliação geral?", type: "multiple", options: ["Excelente", "Bom", "Regular", "Precisa melhorar"], weight: 2, required: true }
+                                      ]
+                                    })
+                                    setViewResponsesModalOpen(true)
+                                  }}
+                                >
                                   <Eye className="w-4 h-4" />
                                   Ver Respostas
                                 </DropdownMenuItem>
@@ -514,6 +533,12 @@ const Questionarios = () => {
         open={responseModalOpen}
         onOpenChange={setResponseModalOpen}
         onSubmitResponse={handleSubmitResponse}
+      />
+      
+      <ViewResponsesModal 
+        questionario={viewingQuestionario}
+        open={viewResponsesModalOpen}
+        onOpenChange={setViewResponsesModalOpen}
       />
     </SidebarProvider>
   );
