@@ -22,138 +22,55 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { getRankingStats } from "@/lib/rankingCalculations"
+import { useState, useEffect } from "react"
 
 const Ranking = () => {
-  const rankingGeral = [
-    {
-      posicao: 1,
-      nome: "João Silva",
-      equipe: "Coral Juvenil",
-      instrumento: "Vocal/Piano",
-      pontuacao: 2450,
-      presenca: 98.5,
-      notaMedia: 9.2,
-      mudanca: 0,
-      medalhas: { ouro: 3, prata: 1, bronze: 0 }
-    },
-    {
-      posicao: 2,
-      nome: "Maria Santos", 
-      equipe: "Banda de Instrumentistas",
-      instrumento: "Órgão",
-      pontuacao: 2380,
-      presenca: 97.2,
-      notaMedia: 8.9,
-      mudanca: 1,
-      medalhas: { ouro: 2, prata: 3, bronze: 1 }
-    },
-    {
-      posicao: 3,
-      nome: "Carlos Lima",
-      equipe: "Coral Adulto", 
-      instrumento: "Vocal",
-      pontuacao: 2290,
-      presenca: 96.8,
-      notaMedia: 8.7,
-      mudanca: -1,
-      medalhas: { ouro: 1, prata: 2, bronze: 3 }
-    },
-    {
-      posicao: 4,
-      nome: "Ana Oliveira",
-      equipe: "Orquestra Regional",
-      instrumento: "Violino",
-      pontuacao: 2156,
-      presenca: 94.3,
-      notaMedia: 8.4,
-      mudanca: 2,
-      medalhas: { ouro: 1, prata: 1, bronze: 2 }
-    },
-    {
-      posicao: 5,
-      nome: "Pedro Costa",
-      equipe: "Banda de Instrumentistas", 
-      instrumento: "Bateria",
-      pontuacao: 2089,
-      presenca: 93.7,
-      notaMedia: 8.1,
-      mudanca: -2,
-      medalhas: { ouro: 0, prata: 2, bronze: 4 }
-    }
-  ]
+  const [rankingData, setRankingData] = useState<any>(null)
 
-  const rankingEquipes = [
-    {
-      posicao: 1,
-      nome: "Coral Adulto",
-      membros: 67,
-      pontuacaoTotal: 156780,
-      pontuacaoMedia: 2340,
-      presencaMedia: 95.8,
-      notaMedia: 8.9,
-      mudanca: 0
-    },
-    {
-      posicao: 2,
-      nome: "Coral Juvenil", 
-      membros: 45,
-      pontuacaoTotal: 98450,
-      pontuacaoMedia: 2187,
-      presencaMedia: 92.5,
-      notaMedia: 8.7,
-      mudanca: 1
-    },
-    {
-      posicao: 3,
-      nome: "Banda de Instrumentistas",
-      membros: 23,
-      pontuacaoTotal: 48920,
-      pontuacaoMedia: 2127,
-      presencaMedia: 89.2,
-      notaMedia: 8.3,
-      mudanca: -1
-    },
-    {
-      posicao: 4,
-      nome: "Orquestra Regional",
-      membros: 34, 
-      pontuacaoTotal: 68340,
-      pontuacaoMedia: 2010,
-      presencaMedia: 87.4,
-      notaMedia: 8.0,
-      mudanca: 0
-    }
-  ]
+  useEffect(() => {
+    // Calculate rankings on component mount
+    const data = getRankingStats()
+    setRankingData(data)
+  }, [])
 
-  const conquistasRecentes = [
-    {
-      id: 1,
-      usuario: "João Silva",
-      conquista: "Presença Perfeita - Janeiro",
-      tipo: "Presença",
-      data: "Hoje",
-      icone: Trophy,
-      cor: "text-warning"
-    },
-    {
-      id: 2,
-      usuario: "Maria Santos",
-      conquista: "Nota Máxima - Teoria Musical",
-      tipo: "Avaliação", 
-      data: "Ontem",
-      icone: Star,
-      cor: "text-primary"
-    },
-    {
-      id: 3,
-      usuario: "Carlos Lima",
-      conquista: "Líder Semanal",
-      tipo: "Ranking",
-      data: "2 dias atrás", 
-      icone: Crown,
-      cor: "text-accent"
-    }
-  ]
+  if (!rankingData) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col">
+            <Header />
+            <main className="flex-1 p-6">
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Calculando rankings...</p>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+    )
+  }
+
+  const { individualRanking, teamRanking, recentAchievements, totalParticipants, maxScore, averageScore, totalAchievements } = rankingData
+
+  // Map achievements to include icons
+  const conquistasRecentes = recentAchievements.map((achievement: any, index: number) => ({
+    id: index + 1,
+    usuario: achievement.usuario,
+    conquista: achievement.conquista,
+    tipo: achievement.tipo,
+    data: achievement.data,
+    icone: achievement.tipo === "Presença" ? Trophy : 
+           achievement.tipo === "Avaliação" ? Star :
+           achievement.tipo === "Ranking" ? Crown : Award,
+    cor: achievement.tipo === "Presença" ? "text-warning" :
+         achievement.tipo === "Avaliação" ? "text-primary" :
+         achievement.tipo === "Ranking" ? "text-accent" : "text-success"
+  }))
 
   const getPosicaoIcon = (posicao: number) => {
     switch (posicao) {
@@ -215,7 +132,7 @@ const Ranking = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Participantes</p>
-                        <p className="text-2xl font-bold text-foreground">169</p>
+                        <p className="text-2xl font-bold text-foreground">{totalParticipants}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -229,7 +146,7 @@ const Ranking = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Pontuação Máxima</p>
-                        <p className="text-2xl font-bold text-foreground">2,450</p>
+                        <p className="text-2xl font-bold text-foreground">{maxScore.toLocaleString()}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -243,7 +160,7 @@ const Ranking = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Média Geral</p>
-                        <p className="text-2xl font-bold text-foreground">1,847</p>
+                        <p className="text-2xl font-bold text-foreground">{averageScore.toLocaleString()}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -257,7 +174,7 @@ const Ranking = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Conquistas</p>
-                        <p className="text-2xl font-bold text-foreground">342</p>
+                        <p className="text-2xl font-bold text-foreground">{totalAchievements}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -275,11 +192,11 @@ const Ranking = () => {
                 <TabsContent value="individual" className="space-y-6">
                   <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
                     <CardHeader>
-                      <CardTitle>Top 5 - Ranking Individual</CardTitle>
+                      <CardTitle>Top {individualRanking.length} - Ranking Individual</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {rankingGeral.map((participante) => {
+                        {individualRanking.map((participante: any) => {
                           const PosicaoIcon = getPosicaoIcon(participante.posicao)
                           const MudancaIcon = getMudancaIcon(participante.mudanca)
                           
@@ -300,7 +217,7 @@ const Ranking = () => {
                                   </div>
                                   <Avatar>
                                     <AvatarFallback className="bg-primary/10 text-primary">
-                                      {participante.nome.split(' ').map(n => n[0]).join('')}
+                                      {participante.nome.split(' ').map((n: string) => n[0]).join('')}
                                     </AvatarFallback>
                                   </Avatar>
                                 </div>
@@ -320,8 +237,8 @@ const Ranking = () => {
                                     {participante.equipe} • {participante.instrumento}
                                   </p>
                                   <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                                    <span>Presença: {participante.presenca}%</span>
-                                    <span>Média: {participante.notaMedia}</span>
+                                    <span>Presença: {participante.presenca.toFixed(1)}%</span>
+                                    <span>Média: {participante.notaMedia.toFixed(1)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -361,7 +278,7 @@ const Ranking = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {rankingEquipes.map((equipe) => {
+                        {teamRanking.map((equipe: any) => {
                           const PosicaoIcon = getPosicaoIcon(equipe.posicao)
                           const MudancaIcon = getMudancaIcon(equipe.mudanca)
                           
@@ -429,7 +346,7 @@ const Ranking = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {conquistasRecentes.map((conquista) => (
+                        {conquistasRecentes.map((conquista: any) => (
                           <div key={conquista.id} className="flex items-center gap-4 p-4 rounded-lg bg-muted/30 border border-border/50">
                             <div className={`w-12 h-12 rounded-lg flex items-center justify-center bg-muted/20`}>
                               <conquista.icone className={`w-6 h-6 ${conquista.cor}`} />
