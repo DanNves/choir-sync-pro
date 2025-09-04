@@ -13,7 +13,9 @@ import {
   TrendingUp,
   Clock,
   Filter,
-  Eye
+  Eye,
+  CalendarIcon,
+  X
 } from "lucide-react"
 import {
   Select,
@@ -28,8 +30,44 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { useToast } from "@/components/ui/use-toast"
 
 const Relatorios = () => {
+  const { toast } = useToast()
+  
+  // Filters state
+  const [filtroTipo, setFiltroTipo] = useState<string>("todos")
+  const [filtroEquipe, setFiltroEquipe] = useState<string>("todas")
+  const [filtroDataInicio, setFiltroDataInicio] = useState<Date>()
+  const [filtroDataFim, setFiltroDataFim] = useState<Date>()
+  const [filtroEvento, setFiltroEvento] = useState<string>("todos")
+  const [showFilterDialog, setShowFilterDialog] = useState(false)
+
+  // Export states
+  const [exportPeriodo, setExportPeriodo] = useState("mes")
+  const [exportTipo, setExportTipo] = useState("individual")
+  const [exportAvaliacao, setExportAvaliacao] = useState("completo")
+  const [isExporting, setIsExporting] = useState(false)
   const relatoriosDisponiveis = [
     {
       id: 1,
@@ -131,6 +169,169 @@ const Relatorios = () => {
     return tipo === 'positivo' ? 'text-success' : 'text-destructive'
   }
 
+  // Mock data for filters
+  const equipesDisponiveis = [
+    { id: "todas", nome: "Todas as Equipes" },
+    { id: "soprano", nome: "Soprano" },
+    { id: "contralto", nome: "Contralto" },
+    { id: "tenor", nome: "Tenor" },
+    { id: "baixo", nome: "Baixo" }
+  ]
+
+  const eventosDisponiveis = [
+    { id: "todos", nome: "Todos os Eventos" },
+    { id: "ensaio1", nome: "Ensaio - 12/01" },
+    { id: "ensaio2", nome: "Ensaio - 15/01" },
+    { id: "reuniao1", nome: "Reunião - 20/01" },
+    { id: "apresentacao1", nome: "Apresentação - 25/01" }
+  ]
+
+  // Filter functions
+  const relatoriosFiltrados = relatoriosDisponiveis.filter((relatorio) => {
+    if (filtroTipo !== "todos") {
+      const tipoMap: Record<string, string> = {
+        presenca: "Presença",
+        performance: "Performance", 
+        avaliacoes: "Avaliações",
+        ranking: "Ranking"
+      }
+      if (relatorio.tipo !== tipoMap[filtroTipo]) return false
+    }
+    return true
+  })
+
+  // Export functions
+  const handleExportPresencas = async () => {
+    if (isExporting) return
+    
+    setIsExporting(true)
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate export
+      
+      const blob = new Blob(['Mock PDF content for presencas'], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `relatorio-presencas-${exportPeriodo}-${format(new Date(), 'yyyy-MM-dd')}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      
+      toast({
+        title: "Relatório exportado com sucesso",
+        description: "O arquivo foi baixado para seu dispositivo."
+      })
+    } catch (error) {
+      toast({
+        title: "Erro na exportação",
+        description: "Não foi possível exportar o relatório. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleExportDesempenho = async () => {
+    if (isExporting) return
+    
+    setIsExporting(true)
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Mock Excel content
+      const mockData = `Relatório de Desempenho - ${exportTipo}\nGerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}\n\nNome,Equipe,Presença,Avaliação,Pontuação\nJoão Silva,Tenor,95%,8.5,92.3\nMaria Santos,Soprano,88%,9.2,89.7`
+      
+      const blob = new Blob([mockData], { type: 'application/vnd.ms-excel' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `analise-desempenho-${exportTipo}-${format(new Date(), 'yyyy-MM-dd')}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      
+      toast({
+        title: "Análise exportada com sucesso",
+        description: "O arquivo Excel foi baixado para seu dispositivo."
+      })
+    } catch (error) {
+      toast({
+        title: "Erro na exportação", 
+        description: "Não foi possível exportar a análise. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleExportAvaliacoes = async () => {
+    if (isExporting) return
+    
+    setIsExporting(true)
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      const blob = new Blob(['Mock PDF content for questionários'], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `questionarios-avaliacoes-${exportAvaliacao}-${format(new Date(), 'yyyy-MM-dd')}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      
+      toast({
+        title: "Avaliações exportadas com sucesso",
+        description: "O relatório de questionários foi baixado."
+      })
+    } catch (error) {
+      toast({
+        title: "Erro na exportação",
+        description: "Não foi possível exportar as avaliações. Tente novamente.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleViewReport = (relatorio: any) => {
+    toast({
+      title: "Visualizando relatório",
+      description: `Abrindo ${relatorio.titulo}...`
+    })
+  }
+
+  const handleDownloadReport = (relatorio: any) => {
+    const blob = new Blob(['Mock file content'], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.style.display = 'none'
+    a.href = url
+    a.download = `${relatorio.titulo.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.${relatorio.formato.toLowerCase()}`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    
+    toast({
+      title: "Download iniciado",
+      description: `Baixando ${relatorio.titulo}...`
+    })
+  }
+
+  const clearFilters = () => {
+    setFiltroTipo("todos")
+    setFiltroEquipe("todas")
+    setFiltroDataInicio(undefined)
+    setFiltroDataFim(undefined)
+    setFiltroEvento("todos")
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -150,11 +351,138 @@ const Relatorios = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" className="gap-2">
-                    <Filter className="w-4 h-4" />
-                    Filtrar
-                  </Button>
-                  <Button className="gap-2">
+                  <Dialog open={showFilterDialog} onOpenChange={setShowFilterDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="gap-2">
+                        <Filter className="w-4 h-4" />
+                        Filtros {(filtroTipo !== "todos" || filtroEquipe !== "todas" || filtroEvento !== "todos" || filtroDataInicio || filtroDataFim) && <Badge variant="destructive" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">{[filtroTipo !== "todos", filtroEquipe !== "todas", filtroEvento !== "todos", filtroDataInicio, filtroDataFim].filter(Boolean).length}</Badge>}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Filtros de Relatórios</DialogTitle>
+                        <DialogDescription>
+                          Configure os filtros para encontrar os relatórios desejados
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="tipo">Tipo de Relatório</Label>
+                            <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="todos">Todos os tipos</SelectItem>
+                                <SelectItem value="presenca">Presença</SelectItem>
+                                <SelectItem value="performance">Performance</SelectItem>
+                                <SelectItem value="avaliacoes">Avaliações</SelectItem>
+                                <SelectItem value="ranking">Ranking</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="equipe">Equipe</Label>
+                            <Select value={filtroEquipe} onValueChange={setFiltroEquipe}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {equipesDisponiveis.map((equipe) => (
+                                  <SelectItem key={equipe.id} value={equipe.id}>
+                                    {equipe.nome}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>Evento</Label>
+                          <Select value={filtroEvento} onValueChange={setFiltroEvento}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {eventosDisponiveis.map((evento) => (
+                                <SelectItem key={evento.id} value={evento.id}>
+                                  {evento.nome}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Data Início</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !filtroDataInicio && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {filtroDataInicio ? format(filtroDataInicio, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={filtroDataInicio}
+                                  onSelect={setFiltroDataInicio}
+                                  initialFocus
+                                  className="pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Data Fim</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !filtroDataFim && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {filtroDataFim ? format(filtroDataFim, "dd/MM/yyyy", { locale: ptBR }) : "Selecionar"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={filtroDataFim}
+                                  onSelect={setFiltroDataFim}
+                                  initialFocus
+                                  className="pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-4">
+                          <Button variant="outline" onClick={clearFilters} className="gap-2">
+                            <X className="w-4 h-4" />
+                            Limpar Filtros
+                          </Button>
+                          <Button onClick={() => setShowFilterDialog(false)}>
+                            Aplicar Filtros
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  <Button className="gap-2" onClick={() => handleExportPresencas()}>
                     <Download className="w-4 h-4" />
                     Gerar Relatório
                   </Button>
@@ -281,7 +609,7 @@ const Relatorios = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {relatoriosDisponiveis.map((relatorio) => (
+                        {relatoriosFiltrados.map((relatorio) => (
                           <div key={relatorio.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -306,10 +634,18 @@ const Relatorios = () => {
                                 {relatorio.formato}
                               </Badge>
                               <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleViewReport(relatorio)}
+                                >
                                   <Eye className="w-4 h-4" />
                                 </Button>
-                                <Button variant="ghost" size="icon">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleDownloadReport(relatorio)}
+                                >
                                   <Download className="w-4 h-4" />
                                 </Button>
                               </div>
@@ -335,7 +671,7 @@ const Relatorios = () => {
                           Exporte dados de frequência e participação em eventos
                         </p>
                         <div className="space-y-3">
-                          <Select defaultValue="mes">
+                          <Select value={exportPeriodo} onValueChange={setExportPeriodo}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -346,9 +682,13 @@ const Relatorios = () => {
                               <SelectItem value="personalizado">Período personalizado</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button className="w-full gap-2">
+                          <Button 
+                            className="w-full gap-2" 
+                            onClick={handleExportPresencas}
+                            disabled={isExporting}
+                          >
                             <Download className="w-4 h-4" />
-                            Exportar PDF
+                            {isExporting ? "Exportando..." : "Exportar PDF"}
                           </Button>
                         </div>
                       </CardContent>
@@ -366,7 +706,7 @@ const Relatorios = () => {
                           Relatório completo com métricas e rankings
                         </p>
                         <div className="space-y-3">
-                          <Select defaultValue="individual">
+                          <Select value={exportTipo} onValueChange={setExportTipo}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -376,9 +716,14 @@ const Relatorios = () => {
                               <SelectItem value="geral">Geral</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button className="w-full gap-2" variant="outline">
+                          <Button 
+                            className="w-full gap-2" 
+                            variant="outline"
+                            onClick={handleExportDesempenho}
+                            disabled={isExporting}
+                          >
                             <Download className="w-4 h-4" />
-                            Exportar Excel
+                            {isExporting ? "Exportando..." : "Exportar Excel"}
                           </Button>
                         </div>
                       </CardContent>
@@ -396,7 +741,7 @@ const Relatorios = () => {
                           Resultados de questionários e feedback dos participantes
                         </p>
                         <div className="space-y-3">
-                          <Select defaultValue="completo">
+                          <Select value={exportAvaliacao} onValueChange={setExportAvaliacao}>
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
@@ -406,9 +751,14 @@ const Relatorios = () => {
                               <SelectItem value="detalhado">Detalhado por pessoa</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button className="w-full gap-2" variant="outline">
+                          <Button 
+                            className="w-full gap-2" 
+                            variant="outline"
+                            onClick={handleExportAvaliacoes}
+                            disabled={isExporting}
+                          >
                             <Download className="w-4 h-4" />
-                            Exportar PDF
+                            {isExporting ? "Exportando..." : "Exportar PDF"}
                           </Button>
                         </div>
                       </CardContent>
