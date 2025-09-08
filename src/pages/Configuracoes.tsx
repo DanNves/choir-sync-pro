@@ -18,7 +18,15 @@ import {
   Mail,
   Smartphone,
   Save,
-  RotateCcw
+  RotateCcw,
+  MapPin,
+  QrCode,
+  Clock,
+  UserCheck,
+  History,
+  Trash2,
+  Plus,
+  Edit
 } from "lucide-react"
 import {
   Tabs,
@@ -126,11 +134,13 @@ const Configuracoes = () => {
 
               {/* Tabs */}
               <Tabs defaultValue="geral" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
+                <TabsList className="grid w-full grid-cols-6 lg:w-[800px]">
                   <TabsTrigger value="geral">Geral</TabsTrigger>
                   <TabsTrigger value="permissoes">Permissões</TabsTrigger>
+                  <TabsTrigger value="eventos">Eventos</TabsTrigger>
+                  <TabsTrigger value="locais">Locais</TabsTrigger>
                   <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
-                  <TabsTrigger value="sistema">Sistema</TabsTrigger>
+                  <TabsTrigger value="seguranca">Segurança</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="geral" className="space-y-6">
@@ -226,82 +236,204 @@ const Configuracoes = () => {
                     </Card>
                   </div>
 
-                  <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Database className="w-5 h-5 text-primary" />
-                        Configurações de Funcionalidades
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="qr-expiracao">Expiração do QR Code (segundos)</Label>
-                            <Input 
-                              id="qr-expiracao" 
-                              type="number" 
-                              defaultValue={configuracoesFuncionalidades.qrCodeExpiracao}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="nota-minima">Nota Mínima para Avaliações</Label>
-                            <Input 
-                              id="nota-minima" 
-                              type="number" 
-                              step="0.1"
-                              defaultValue={configuracoesFuncionalidades.avaliacaoMinima}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="presenca-minima">Presença Mínima p/ Ranking (%)</Label>
-                            <Input 
-                              id="presenca-minima" 
-                              type="number"
-                              defaultValue={configuracoesFuncionalidades.presencaMinimaRanking}
-                            />
-                          </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Users className="w-5 h-5 text-primary" />
+                          Configurações de Equipes
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="limite-membros">Limite de membros por equipe</Label>
+                          <Input 
+                            id="limite-membros" 
+                            type="number" 
+                            defaultValue="15"
+                            min="1"
+                            max="50"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Número máximo de membros permitidos por equipe
+                          </p>
                         </div>
+                      </CardContent>
+                    </Card>
 
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="presenca-auto" className="text-sm font-medium">
-                              Presença Automática por QR
-                            </Label>
-                            <Switch 
-                              id="presenca-auto" 
-                              checked={configuracoesFuncionalidades.presencaAutomatica}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="backup-auto" className="text-sm font-medium">
-                              Backup Automático Diário
-                            </Label>
-                            <Switch 
-                              id="backup-auto" 
-                              checked={configuracoesFuncionalidades.backupAutomatico}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="log-auditoria" className="text-sm font-medium">
-                              Log de Auditoria
-                            </Label>
-                            <Switch 
-                              id="log-auditoria" 
-                              checked={configuracoesFuncionalidades.logAuditoria}
-                            />
-                          </div>
+                    <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Database className="w-5 h-5 text-primary" />
+                          Pesos para Ranking
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="peso-presenca">Peso da Presença (%)</Label>
+                          <Input 
+                            id="peso-presenca" 
+                            type="number" 
+                            defaultValue="40"
+                            min="0"
+                            max="100"
+                          />
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <div className="space-y-2">
+                          <Label htmlFor="peso-questionario">Peso dos Questionários (%)</Label>
+                          <Input 
+                            id="peso-questionario" 
+                            type="number" 
+                            defaultValue="30"
+                            min="0"
+                            max="100"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="peso-avaliacao">Peso da Avaliação Técnica (%)</Label>
+                          <Input 
+                            id="peso-avaliacao" 
+                            type="number" 
+                            defaultValue="30"
+                            min="0"
+                            max="100"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          A soma dos pesos deve ser igual a 100%
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="permissoes" className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Shield className="w-5 h-5 text-primary" />
+                          Papéis e Permissões
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-3">
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium">Administrador</h4>
+                              <Badge variant="destructive">Admin</Badge>
+                            </div>
+                            <div className="space-y-1 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <UserCheck className="w-3 h-3" />
+                                <span>Acesso total ao sistema</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Settings className="w-3 h-3" />
+                                <span>Gerenciar configurações</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Users className="w-3 h-3" />
+                                <span>Gerenciar usuários</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium">Encarregado Local</h4>
+                              <Badge variant="default">Local</Badge>
+                            </div>
+                            <div className="space-y-1 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <UserCheck className="w-3 h-3" />
+                                <span>Criar/editar equipes locais</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <QrCode className="w-3 h-3" />
+                                <span>Gerenciar presença local</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Database className="w-3 h-3" />
+                                <span>Ver relatórios locais</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium">Instrutor</h4>
+                              <Badge variant="outline">Instrutor</Badge>
+                            </div>
+                            <div className="space-y-1 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <Bell className="w-3 h-3" />
+                                <span>Criar questionários</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <UserCheck className="w-3 h-3" />
+                                <span>Avaliar participantes</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Key className="w-5 h-5 text-primary" />
+                          Acessos Especiais
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-3">
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">Maria Santos</span>
+                              <Badge variant="outline">Encarregado</Badge>
+                            </div>
+                            <div className="text-sm text-muted-foreground mb-2">
+                              maria.santos@email.com
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Plus className="w-3 h-3 text-green-500" />
+                              <span>Acesso a relatórios globais</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Plus className="w-3 h-3 text-green-500" />
+                              <span>Criar eventos regionais</span>
+                            </div>
+                          </div>
+
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">Pedro Costa</span>
+                              <Badge variant="outline">Instrutor</Badge>
+                            </div>
+                            <div className="text-sm text-muted-foreground mb-2">
+                              pedro.costa@email.com
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Plus className="w-3 h-3 text-green-500" />
+                              <span>Gerenciar configurações de QR Code</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Button className="w-full gap-2">
+                          <Users className="w-4 h-4" />
+                          Gerenciar Acessos Especiais
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+
                   <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-primary" />
+                        <Users className="w-5 h-5 text-primary" />
                         Usuários com Acesso Administrativo
                       </CardTitle>
                     </CardHeader>
@@ -363,8 +495,216 @@ const Configuracoes = () => {
                   </Card>
                 </TabsContent>
 
-                <TabsContent value="notificacoes" className="space-y-6">
+                <TabsContent value="eventos" className="space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <QrCode className="w-5 h-5 text-primary" />
+                          Configurações de QR Code
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="qr-expiracao">Tempo de expiração (minutos)</Label>
+                          <Input 
+                            id="qr-expiracao" 
+                            type="number" 
+                            defaultValue="5"
+                            min="1"
+                            max="60"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Tempo até o QR Code expirar após ser gerado
+                          </p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <Label>Tipo de QR Code</Label>
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <input type="radio" id="qr-rotativo" name="qr-type" value="rotativo" defaultChecked />
+                              <Label htmlFor="qr-rotativo" className="text-sm font-normal">
+                                QR Code Rotativo (renova automaticamente)
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input type="radio" id="qr-unico" name="qr-type" value="unico" />
+                              <Label htmlFor="qr-unico" className="text-sm font-normal">
+                                QR Code Único por evento
+                              </Label>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="intervalo-rotacao">Intervalo de rotação (minutos)</Label>
+                          <Input 
+                            id="intervalo-rotacao" 
+                            type="number" 
+                            defaultValue="3"
+                            min="1"
+                            max="30"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Frequência de renovação automática do QR Code
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Clock className="w-5 h-5 text-primary" />
+                          Configurações de Presença
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="janela-presenca">Janela de presença (minutos)</Label>
+                          <Input 
+                            id="janela-presenca" 
+                            type="number" 
+                            defaultValue="10"
+                            min="5"
+                            max="60"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Tempo antes/depois do evento para marcar presença
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="presenca-automatica" className="text-sm font-medium">
+                            Presença automática por QR Code
+                          </Label>
+                          <Switch id="presenca-automatica" defaultChecked />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="presenca-gps" className="text-sm font-medium">
+                            Validação por GPS
+                          </Label>
+                          <Switch id="presenca-gps" />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="raio-gps">Raio de validação GPS (metros)</Label>
+                          <Input 
+                            id="raio-gps" 
+                            type="number" 
+                            defaultValue="100"
+                            min="10"
+                            max="1000"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="locais" className="space-y-6">
+                  <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        Gerenciamento de Locais
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Adicionar Novo Local</h4>
+                          <div className="space-y-3">
+                            <div className="space-y-2">
+                              <Label htmlFor="nome-local">Nome do Local</Label>
+                              <Input id="nome-local" placeholder="Ex: Igreja Central" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="bairro">Bairro</Label>
+                              <Input id="bairro" placeholder="Ex: Centro" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="cidade">Cidade</Label>
+                              <Input id="cidade" placeholder="Ex: São Paulo" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="estado">Estado</Label>
+                              <Select>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione o estado" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="SP">São Paulo</SelectItem>
+                                  <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                                  <SelectItem value="MG">Minas Gerais</SelectItem>
+                                  <SelectItem value="PR">Paraná</SelectItem>
+                                  <SelectItem value="SC">Santa Catarina</SelectItem>
+                                  <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="regional">Regional</Label>
+                              <Select>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione a regional" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="sudeste">Sudeste</SelectItem>
+                                  <SelectItem value="sul">Sul</SelectItem>
+                                  <SelectItem value="nordeste">Nordeste</SelectItem>
+                                  <SelectItem value="norte">Norte</SelectItem>
+                                  <SelectItem value="centro-oeste">Centro-Oeste</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button className="w-full gap-2">
+                              <Plus className="w-4 h-4" />
+                              Adicionar Local
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Locais Cadastrados</h4>
+                          <div className="space-y-2 max-h-96 overflow-y-auto">
+                            {[
+                              { nome: "Igreja Central", bairro: "Centro", cidade: "São Paulo", estado: "SP", regional: "Sudeste" },
+                              { nome: "Igreja Norte", bairro: "Santana", cidade: "São Paulo", estado: "SP", regional: "Sudeste" },
+                              { nome: "Igreja Sul", bairro: "Vila Mariana", cidade: "São Paulo", estado: "SP", regional: "Sudeste" },
+                              { nome: "Igreja Copacabana", bairro: "Copacabana", cidade: "Rio de Janeiro", estado: "RJ", regional: "Sudeste" }
+                            ].map((local, index) => (
+                              <div key={index} className="p-3 border rounded-lg">
+                                <div className="flex items-center justify-between mb-1">
+                                  <h5 className="font-medium">{local.nome}</h5>
+                                  <div className="flex gap-1">
+                                    <Button variant="ghost" size="sm">
+                                      <Edit className="w-3 h-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="sm">
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {local.bairro}, {local.cidade} - {local.estado}
+                                </p>
+                                <Badge variant="outline" className="text-xs">
+                                  {local.regional}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="notificacoes" className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -373,29 +713,41 @@ const Configuracoes = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="email-eventos" className="text-sm font-medium">
-                            Novos eventos criados
-                          </Label>
-                          <Switch id="email-eventos" checked={true} />
+                        <div className="space-y-2 mb-4">
+                          <Label htmlFor="email-remetente">E-mail remetente padrão</Label>
+                          <Input 
+                            id="email-remetente" 
+                            type="email" 
+                            defaultValue="noreply@igreja.com.br"
+                            placeholder="remetente@dominio.com"
+                          />
                         </div>
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="email-presenca" className="text-sm font-medium">
-                            Alertas de presença baixa
-                          </Label>
-                          <Switch id="email-presenca" checked={true} />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="email-avaliacoes" className="text-sm font-medium">
-                            Novas avaliações disponíveis
-                          </Label>
-                          <Switch id="email-avaliacoes" checked={false} />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="email-ranking" className="text-sm font-medium">
-                            Atualizações de ranking
-                          </Label>
-                          <Switch id="email-ranking" checked={true} />
+                        
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="email-eventos" className="text-sm font-medium">
+                              Novos eventos criados
+                            </Label>
+                            <Switch id="email-eventos" defaultChecked />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="email-presenca" className="text-sm font-medium">
+                              Alertas de presença baixa
+                            </Label>
+                            <Switch id="email-presenca" defaultChecked />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="email-avaliacoes" className="text-sm font-medium">
+                              Novas avaliações disponíveis
+                            </Label>
+                            <Switch id="email-avaliacoes" />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="email-ranking" className="text-sm font-medium">
+                              Atualizações de ranking
+                            </Label>
+                            <Switch id="email-ranking" defaultChecked />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -409,35 +761,92 @@ const Configuracoes = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="push-checkin" className="text-sm font-medium">
-                            Lembretes de check-in
+                          <Label htmlFor="push-ativo" className="text-sm font-medium">
+                            Notificações Push ativas
                           </Label>
-                          <Switch id="push-checkin" checked={true} />
+                          <Switch id="push-ativo" defaultChecked />
                         </div>
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="push-eventos" className="text-sm font-medium">
-                            Início de eventos
-                          </Label>
-                          <Switch id="push-eventos" checked={true} />
+                        
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="push-checkin" className="text-sm font-medium">
+                              Lembretes de check-in
+                            </Label>
+                            <Switch id="push-checkin" defaultChecked />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="push-eventos" className="text-sm font-medium">
+                              Início de eventos
+                            </Label>
+                            <Switch id="push-eventos" defaultChecked />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="push-questionarios" className="text-sm font-medium">
+                              Questionários pendentes
+                            </Label>
+                            <Switch id="push-questionarios" />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="push-conquistas" className="text-sm font-medium">
+                              Novas conquistas
+                            </Label>
+                            <Switch id="push-conquistas" defaultChecked />
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="push-questionarios" className="text-sm font-medium">
-                            Questionários pendentes
-                          </Label>
-                          <Switch id="push-questionarios" checked={false} />
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Bell className="w-5 h-5 text-primary" />
+                          WhatsApp/SMS
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2 mb-4">
+                          <Label htmlFor="whatsapp-numero">Número padrão (WhatsApp)</Label>
+                          <Input 
+                            id="whatsapp-numero" 
+                            defaultValue="+55 11 99999-9999"
+                            placeholder="+55 11 99999-9999"
+                          />
                         </div>
+
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="push-conquistas" className="text-sm font-medium">
-                            Novas conquistas
+                          <Label htmlFor="whatsapp-ativo" className="text-sm font-medium">
+                            WhatsApp ativo
                           </Label>
-                          <Switch id="push-conquistas" checked={true} />
+                          <Switch id="whatsapp-ativo" />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="sms-ativo" className="text-sm font-medium">
+                            SMS ativo
+                          </Label>
+                          <Switch id="sms-ativo" />
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="whatsapp-eventos" className="text-sm font-medium">
+                              Eventos importantes
+                            </Label>
+                            <Switch id="whatsapp-eventos" />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="whatsapp-urgente" className="text-sm font-medium">
+                              Notificações urgentes
+                            </Label>
+                            <Switch id="whatsapp-urgente" defaultChecked />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                 </TabsContent>
 
-                <TabsContent value="sistema" className="space-y-6">
+                <TabsContent value="seguranca" className="space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
                       <CardHeader>
@@ -459,13 +868,13 @@ const Configuracoes = () => {
                           <Label htmlFor="auth-2fa" className="text-sm font-medium">
                             Autenticação de 2 Fatores
                           </Label>
-                          <Switch id="auth-2fa" checked={false} />
+                          <Switch id="auth-2fa" />
                         </div>
                         <div className="flex items-center justify-between">
                           <Label htmlFor="ip-restrict" className="text-sm font-medium">
                             Restrição por IP
                           </Label>
-                          <Switch id="ip-restrict" checked={false} />
+                          <Switch id="ip-restrict" />
                         </div>
                       </CardContent>
                     </Card>
@@ -499,7 +908,7 @@ const Configuracoes = () => {
                           <Label htmlFor="manutencao-auto" className="text-sm font-medium">
                             Manutenção Automática
                           </Label>
-                          <Switch id="manutencao-auto" checked={true} />
+                          <Switch id="manutencao-auto" defaultChecked />
                         </div>
                         <Button variant="outline" className="w-full gap-2">
                           <Database className="w-4 h-4" />
@@ -508,6 +917,84 @@ const Configuracoes = () => {
                       </CardContent>
                     </Card>
                   </div>
+
+                  <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="w-5 h-5 text-primary" />
+                        Sessões Ativas
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {[
+                          { usuario: "João Silva", dispositivo: "Chrome - Windows 10", ip: "192.168.1.100", inicio: "14:30", status: "Ativo" },
+                          { usuario: "Maria Santos", dispositivo: "Safari - iOS 17", ip: "192.168.1.105", inicio: "13:45", status: "Ativo" },
+                          { usuario: "Pedro Costa", dispositivo: "Firefox - Linux", ip: "192.168.1.110", inicio: "12:20", status: "Inativo" }
+                        ].map((sessao, index) => (
+                          <div key={index} className="p-3 border rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <h5 className="font-medium">{sessao.usuario}</h5>
+                                <p className="text-sm text-muted-foreground">{sessao.dispositivo}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={sessao.status === 'Ativo' ? 'default' : 'secondary'}>
+                                  {sessao.status}
+                                </Badge>
+                                <Button variant="destructive" size="sm">
+                                  Encerrar
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span>IP: {sessao.ip}</span>
+                              <span>Início: {sessao.inicio}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <History className="w-5 h-5 text-primary" />
+                        Histórico de Ações Administrativas
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {[
+                          { usuario: "João Silva", acao: "Criou nova equipe", detalhes: "Equipe: Jovens Unidos", data: "Hoje, 15:30" },
+                          { usuario: "Maria Santos", acao: "Alterou configurações", detalhes: "QR Code: tempo de expiração", data: "Hoje, 14:20" },
+                          { usuario: "João Silva", acao: "Adicionou usuário admin", detalhes: "Usuário: Pedro Costa", data: "Ontem, 16:45" },
+                          { usuario: "Pedro Costa", acao: "Criou questionário", detalhes: "Questionário: Avaliação Mensal", data: "Ontem, 14:10" },
+                          { usuario: "Maria Santos", acao: "Exportou relatório", detalhes: "Relatório de presença - Janeiro", data: "2 dias atrás" }
+                        ].map((log, index) => (
+                          <div key={index} className="p-3 border rounded-lg">
+                            <div className="flex items-start justify-between mb-1">
+                              <div>
+                                <h5 className="font-medium text-sm">{log.usuario}</h5>
+                                <p className="text-sm text-foreground">{log.acao}</p>
+                                <p className="text-xs text-muted-foreground">{log.detalhes}</p>
+                              </div>
+                              <span className="text-xs text-muted-foreground">{log.data}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 flex gap-2">
+                        <Button variant="outline" size="sm">
+                          Ver Logs Completos
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          Exportar Logs
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               </Tabs>
             </div>
