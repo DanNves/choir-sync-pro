@@ -22,26 +22,28 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/AuthContext"
 
 const menuItems = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Usuários", url: "/usuarios", icon: Users },
-  { title: "Eventos", url: "/eventos", icon: Calendar },
-  { title: "Presenças", url: "/presencas", icon: UserCheck },
-  { title: "Equipes", url: "/equipes", icon: Music },
-  { title: "Questionários", url: "/questionarios", icon: ClipboardList },
-  { title: "Ranking", url: "/ranking", icon: Trophy },
-  { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
+  { title: "Dashboard", url: "/", icon: Home, resource: "dashboard" },
+  { title: "Usuários", url: "/usuarios", icon: Users, resource: "usuarios" },
+  { title: "Eventos", url: "/eventos", icon: Calendar, resource: "eventos" },
+  { title: "Presenças", url: "/presencas", icon: UserCheck, resource: "presencas" },
+  { title: "Equipes", url: "/equipes", icon: Music, resource: "equipes" },
+  { title: "Questionários", url: "/questionarios", icon: ClipboardList, resource: "questionarios" },
+  { title: "Ranking", url: "/ranking", icon: Trophy, resource: "ranking" },
+  { title: "Relatórios", url: "/relatorios", icon: BarChart3, resource: "relatorios" },
 ]
 
 const adminItems = [
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
+  { title: "Configurações", url: "/configuracoes", icon: Settings, resource: "configuracoes" },
 ]
 
 export function AppSidebar() {
   const { state } = useSidebar()
   const location = useLocation()
   const currentPath = location.pathname
+  const { canAccess } = useAuth()
 
   const isCollapsed = state === "collapsed"
 
@@ -84,7 +86,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {menuItems.filter(item => canAccess(item.resource)).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClass(item.url)}>
@@ -105,7 +107,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {adminItems.map((item) => (
+              {adminItems.filter(item => canAccess(item.resource)).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClass(item.url)}>

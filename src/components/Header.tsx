@@ -12,8 +12,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function Header() {
+  const { user, logout } = useAuth()
+  
+  const getRoleDisplayName = (role: string) => {
+    const roleNames: Record<string, string> = {
+      candidato: 'Candidato(a)',
+      musico: 'Músico/Organista',
+      instrutor: 'Instrutor(a)',
+      encarregado_local: 'Encarregado Local',
+      encarregado_regional: 'Encarregado Regional',
+      examinadora: 'Examinadora',
+      cooperador_jovens: 'Cooperador de Jovens',
+      cooperador_oficio: 'Cooperador do Ofício',
+      anciao: 'Ancião',
+      diacono: 'Diácono',
+      administrador: 'Administrador'
+    }
+    return roleNames[role] || role
+  }
+
+  const getUserInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase()
+  }
+
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
@@ -44,12 +68,12 @@ export function Header() {
               <Avatar className="w-8 h-8">
                 <AvatarImage src="/placeholder-user.jpg" />
                 <AvatarFallback className="bg-primary text-primary-foreground">
-                  MN
+                  {getUserInitials(user?.nome || 'U')}
                 </AvatarFallback>
               </Avatar>
               <div className="text-left hidden md:block">
-                <p className="text-sm font-medium text-foreground">Martin Nel</p>
-                <p className="text-xs text-muted-foreground">Administrador</p>
+                <p className="text-sm font-medium text-foreground">{user?.nome}</p>
+                <p className="text-xs text-muted-foreground">{getRoleDisplayName(user?.papel || '')}</p>
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -65,7 +89,7 @@ export function Header() {
               Configurações
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="text-destructive" onClick={logout}>
               Sair
             </DropdownMenuItem>
           </DropdownMenuContent>
