@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 
 export function RoleSelector() {
-  const { user } = useAuth();
+  const { user, updateUserRole } = useAuth();
 
   const roles: { value: UserRole; label: string }[] = [
     { value: 'candidato', label: 'Candidato(a)' },
@@ -26,10 +26,7 @@ export function RoleSelector() {
 
   const handleRoleChange = (newRole: UserRole) => {
     // Mock role change - in real app this would be restricted
-    if (user) {
-      (user as any).papel = newRole;
-      window.location.reload(); // Force refresh to update permissions
-    }
+    updateUserRole(newRole);
   };
 
   return (

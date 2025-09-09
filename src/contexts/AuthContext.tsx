@@ -27,6 +27,7 @@ export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUserRole: (role: UserRole) => void;
   hasPermission: (permission: string) => boolean;
   canAccess: (resource: string) => boolean;
 }
@@ -156,6 +157,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateUserRole = (role: UserRole) => {
+    if (user) {
+      setUser({ ...user, papel: role });
+    }
+  };
+
   const hasPermission = (permission: string): boolean => {
     if (!user) return false;
     return rolePermissions[user.papel]?.includes(permission) || false;
@@ -171,6 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       login,
       logout,
+      updateUserRole,
       hasPermission,
       canAccess
     }}>
