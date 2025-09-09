@@ -2,6 +2,8 @@ import { useState } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { ConditionalRender } from "@/components/ConditionalRender"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -228,7 +230,8 @@ const Questionarios = () => {
   }
 
   return (
-    <SidebarProvider>
+    <ProtectedRoute resource="questionarios">
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -245,12 +248,14 @@ const Questionarios = () => {
                     Crie avaliações técnicas e colete feedback dos participantes
                   </p>
                 </div>
-                <CreateQuestionarioModal onCreateQuestionario={handleCreateQuestionario}>
-                  <Button className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Novo Questionário
-                  </Button>
-                </CreateQuestionarioModal>
+                <ConditionalRender permission="create_questionnaires">
+                  <CreateQuestionarioModal onCreateQuestionario={handleCreateQuestionario}>
+                    <Button className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Novo Questionário
+                    </Button>
+                  </CreateQuestionarioModal>
+                </ConditionalRender>
               </div>
 
               {/* Stats Cards */}
@@ -540,7 +545,8 @@ const Questionarios = () => {
         open={viewResponsesModalOpen}
         onOpenChange={setViewResponsesModalOpen}
       />
-    </SidebarProvider>
+      </SidebarProvider>
+    </ProtectedRoute>
   );
 };
 

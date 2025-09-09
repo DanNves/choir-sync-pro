@@ -1,6 +1,8 @@
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { ConditionalRender } from "@/components/ConditionalRender"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -216,7 +218,8 @@ const Presencas = () => {
   )
 
   return (
-    <SidebarProvider>
+    <ProtectedRoute resource="presencas">
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -233,13 +236,14 @@ const Presencas = () => {
                     Monitore presenças em tempo real e histórico de participação
                   </p>
                 </div>
-                <Dialog open={isCheckinModalOpen} onOpenChange={setIsCheckinModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="gap-2">
-                      <UserCheck className="w-4 h-4" />
-                      Check-in Manual
-                    </Button>
-                  </DialogTrigger>
+                <ConditionalRender permission="manual_checkin">
+                  <Dialog open={isCheckinModalOpen} onOpenChange={setIsCheckinModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2">
+                        <UserCheck className="w-4 h-4" />
+                        Check-in Manual
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle>Check-in Manual</DialogTitle>
@@ -302,8 +306,9 @@ const Presencas = () => {
                         </Button>
                       </div>
                     </div>
-                  </DialogContent>
-                </Dialog>
+                    </DialogContent>
+                  </Dialog>
+                </ConditionalRender>
               </div>
 
               {/* Evento Atual */}
@@ -521,7 +526,8 @@ const Presencas = () => {
           </main>
         </div>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </ProtectedRoute>
   );
 };
 

@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -19,16 +20,7 @@ export function ProtectedRoute({
   const { user, canAccess, hasPermission } = useAuth();
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Alert className="max-w-md">
-          <Shield className="h-4 w-4" />
-          <AlertDescription>
-            Você precisa estar logado para acessar esta página.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
+    return <Navigate to="/login" replace />;
   }
 
   const hasAccess = resource ? canAccess(resource) : permission ? hasPermission(permission) : true;

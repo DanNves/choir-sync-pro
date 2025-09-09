@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,11 +13,28 @@ const loginHero = "/lovable-uploads/03654e25-5cfc-4470-8406-3d354b092da4.png";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { login, user } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Lógica de login será implementada após integração com Supabase
-    console.log("Login form submitted");
+    try {
+      const formData = new FormData(e.currentTarget as HTMLFormElement);
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+      
+      await login(email, password);
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error);
+    }
   };
 
   const handleRegister = (e: React.FormEvent) => {
@@ -81,25 +100,27 @@ const Login = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">E-mail</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="seu@email.com"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Senha</Label>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Sua senha"
-                          required
-                        />
+                    <form onSubmit={handleLogin} className="space-y-4">
+                     <div className="space-y-2">
+                       <Label htmlFor="email">E-mail</Label>
+                       <Input
+                         id="email"
+                         name="email"
+                         type="email"
+                         placeholder="seu@email.com"
+                         required
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="password">Senha</Label>
+                       <div className="relative">
+                         <Input
+                           id="password"
+                           name="password"
+                           type={showPassword ? "text" : "password"}
+                           placeholder="Sua senha"
+                           required
+                         />
                         <Button
                           type="button"
                           variant="ghost"

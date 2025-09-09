@@ -2,6 +2,8 @@ import { useState } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { ConditionalRender } from "@/components/ConditionalRender"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -277,7 +279,8 @@ const Eventos = () => {
   }
 
   return (
-    <SidebarProvider>
+    <ProtectedRoute resource="eventos">
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -294,10 +297,12 @@ const Eventos = () => {
                     Organize ensaios, reuniões e encontros musicais
                   </p>
                 </div>
-                <Button className="gap-2" onClick={handleNewEvent}>
-                  <CalendarPlus className="w-4 h-4" />
-                  Novo Evento
-                </Button>
+                <ConditionalRender permission="manage_local_events">
+                  <Button className="gap-2" onClick={handleNewEvent}>
+                    <CalendarPlus className="w-4 h-4" />
+                    Novo Evento
+                  </Button>
+                </ConditionalRender>
               </div>
 
               {/* Stats Cards */}
@@ -778,7 +783,8 @@ const Eventos = () => {
           </main>
         </div>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </ProtectedRoute>
   );
 };
 

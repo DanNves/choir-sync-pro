@@ -2,6 +2,8 @@ import React, { useState } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { ConditionalRender } from "@/components/ConditionalRender"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -234,7 +236,8 @@ const Equipes = () => {
   const averagePerformance = 91.2 // Mock value
 
   return (
-    <SidebarProvider>
+    <ProtectedRoute resource="equipes">
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -251,10 +254,15 @@ const Equipes = () => {
                     Organize grupos musicais e acompanhe o desempenho das equipes
                   </p>
                 </div>
-                <Button className="gap-2" onClick={() => setCreateModalOpen(true)}>
-                  <Plus className="w-4 h-4" />
-                  Nova Equipe
-                </Button>
+                <ConditionalRender permission="manage_users">
+                  <Button 
+                    className="gap-2" 
+                    onClick={() => setCreateModalOpen(true)}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nova Equipe
+                  </Button>
+                </ConditionalRender>
               </div>
 
               {/* Stats Cards */}
@@ -507,7 +515,8 @@ const Equipes = () => {
           openAddMemberModal(selectedTeam!)
         }}
       />
-    </SidebarProvider>
+      </SidebarProvider>
+    </ProtectedRoute>
   )
 }
 

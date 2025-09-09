@@ -2,6 +2,8 @@ import { useState } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { ConditionalRender } from "@/components/ConditionalRender"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -244,7 +246,8 @@ const Usuarios = () => {
   }
 
   return (
-    <SidebarProvider>
+    <ProtectedRoute resource="usuarios">
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -261,13 +264,14 @@ const Usuarios = () => {
                     Gerencie membros, papéis e permissões do sistema
                   </p>
                 </div>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="gap-2">
-                      <UserPlus className="w-4 h-4" />
-                      Novo Usuário
-                    </Button>
-                  </DialogTrigger>
+                <ConditionalRender permission="manage_users">
+                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2">
+                        <UserPlus className="w-4 h-4" />
+                        Novo Usuário
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                       <DialogTitle>Adicionar Novo Usuário</DialogTitle>
@@ -391,8 +395,9 @@ const Usuarios = () => {
                         </Button>
                       </DialogFooter>
                     </form>
-                  </DialogContent>
-                </Dialog>
+                    </DialogContent>
+                  </Dialog>
+                </ConditionalRender>
 
                 {/* Dialog de Edição */}
                 <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -678,7 +683,8 @@ const Usuarios = () => {
           </main>
         </div>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </ProtectedRoute>
   );
 };
 
