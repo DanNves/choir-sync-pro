@@ -27,22 +27,12 @@ export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateUserRole: (role: UserRole) => void;
   hasPermission: (permission: string) => boolean;
   canAccess: (resource: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user for demonstration - in real app this would come from backend
-const mockUser: User = {
-  id: '1',
-  nome: 'Admin Test',
-  email: 'admin@test.com',
-  papel: 'administrador',
-  localidade: 'São Paulo',
-  regiao: 'Sudeste'
-};
 
 const rolePermissions: Record<UserRole, string[]> = {
   candidato: [
@@ -146,21 +136,25 @@ const resourceAccess: Record<string, UserRole[]> = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(mockUser);
+  // In real app, user would be null initially and set after authentication
+  const [user, setUser] = useState<User | null>(null);
 
   const login = async (email: string, password: string) => {
-    // Mock login - in real app this would call backend
-    setUser(mockUser);
+    // TODO: Implement real authentication with backend
+    // For now, set a mock admin user for development
+    const authenticatedUser: User = {
+      id: '1',
+      nome: 'Admin User',
+      email: email,
+      papel: 'administrador',
+      localidade: 'São Paulo',
+      regiao: 'Sudeste'
+    };
+    setUser(authenticatedUser);
   };
 
   const logout = () => {
     setUser(null);
-  };
-
-  const updateUserRole = (role: UserRole) => {
-    if (user) {
-      setUser({ ...user, papel: role });
-    }
   };
 
   const hasPermission = (permission: string): boolean => {
@@ -178,7 +172,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       login,
       logout,
-      updateUserRole,
       hasPermission,
       canAccess
     }}>

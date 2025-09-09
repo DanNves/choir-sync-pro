@@ -2,7 +2,6 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
 import { DashboardStats } from "@/components/DashboardStats"
-import { RoleSelector } from "@/components/RoleSelector"
 import { ConditionalRender } from "@/components/ConditionalRender"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 
@@ -26,9 +25,6 @@ const Index = () => {
                       Bem-vindo ao sistema de gestão musical. Gerencie membros, eventos e acompanhe o desempenho da sua comunidade.
                     </p>
                   </div>
-                  <ConditionalRender permission="system_config">
-                    <RoleSelector />
-                  </ConditionalRender>
                 </div>
               </div>
               <DashboardStats />
