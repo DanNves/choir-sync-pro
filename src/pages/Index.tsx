@@ -4,10 +4,12 @@ import { Header } from "@/components/Header"
 import { DashboardStats } from "@/components/DashboardStats"
 import { RoleSelector } from "@/components/RoleSelector"
 import { ConditionalRender } from "@/components/ConditionalRender"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
 
 const Index = () => {
   return (
-    <SidebarProvider>
+    <ProtectedRoute resource="dashboard">
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -35,6 +37,7 @@ const Index = () => {
         </div>
       </div>
     </SidebarProvider>
+    </ProtectedRoute>
   );
 };
 

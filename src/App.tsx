@@ -28,51 +28,15 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={
-              <ProtectedRoute resource="dashboard">
-                <Index />
-              </ProtectedRoute>
-            } />
-            <Route path="/usuarios" element={
-              <ProtectedRoute resource="usuarios">
-                <Usuarios />
-              </ProtectedRoute>
-            } />
-            <Route path="/eventos" element={
-              <ProtectedRoute resource="eventos">
-                <Eventos />
-              </ProtectedRoute>
-            } />
-            <Route path="/presencas" element={
-              <ProtectedRoute resource="presencas">
-                <Presencas />
-              </ProtectedRoute>
-            } />
-            <Route path="/equipes" element={
-              <ProtectedRoute resource="equipes">
-                <Equipes />
-              </ProtectedRoute>
-            } />
-            <Route path="/questionarios" element={
-              <ProtectedRoute resource="questionarios">
-                <Questionarios />
-              </ProtectedRoute>
-            } />
-            <Route path="/ranking" element={
-              <ProtectedRoute resource="ranking">
-                <Ranking />
-              </ProtectedRoute>
-            } />
-            <Route path="/relatorios" element={
-              <ProtectedRoute resource="relatorios">
-                <Relatorios />
-              </ProtectedRoute>
-            } />
-            <Route path="/configuracoes" element={
-              <ProtectedRoute resource="configuracoes">
-                <Configuracoes />
-              </ProtectedRoute>
-            } />
+            <Route path="/" element={<Index />} />
+            <Route path="/usuarios" element={<Usuarios />} />
+            <Route path="/eventos" element={<Eventos />} />
+            <Route path="/presencas" element={<Presencas />} />
+            <Route path="/equipes" element={<Equipes />} />
+            <Route path="/questionarios" element={<Questionarios />} />
+            <Route path="/ranking" element={<Ranking />} />
+            <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -49,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
 
 const Configuracoes = () => {
   const usuariosComAcesso = [
@@ -103,7 +104,8 @@ const Configuracoes = () => {
   }
 
   return (
-    <SidebarProvider>
+    <ProtectedRoute resource="configuracoes">
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -1002,6 +1004,7 @@ const Configuracoes = () => {
         </div>
       </div>
     </SidebarProvider>
+    </ProtectedRoute>
   );
 };
 
