@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 export type UserRole = 
   | 'candidato' 
@@ -25,8 +27,11 @@ export interface User {
 
 export interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  session: Session | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ error: Error | null }>;
+  register: (email: string, password: string, nome: string, telefone?: string) => Promise<{ error: Error | null }>;
+  logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
   canAccess: (resource: string) => boolean;
 }
@@ -136,25 +141,117 @@ const resourceAccess: Record<string, UserRole[]> = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // In real app, user would be null initially and set after authentication
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = async (email: string, password: string) => {
-    // TODO: Implement real authentication with backend
-    // For now, set a mock admin user for development
-    const authenticatedUser: User = {
-      id: '1',
-      nome: 'Admin User',
-      email: email,
-      papel: 'administrador',
-      localidade: 'São Paulo',
-      regiao: 'Sudeste'
-    };
-    setUser(authenticatedUser);
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (rolesError) throw rolesError;
+
+      const primaryRole = roles?.[0]?.role || 'candidato';
+
+      const userSession = await supabase.auth.getUser();
+      const email = userSession.data.user?.email || '';
+
+      setUser({
+        id: userId,
+        nome: profile.nome,
+        email: email,
+        papel: primaryRole as UserRole,
+        localidade: profile.localidade,
+        regiao: profile.regiao
+      });
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      setUser(null);
+    }
   };
 
-  const logout = () => {
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        
+        if (session?.user) {
+          setTimeout(() => {
+            loadUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setUser(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      
+      if (session?.user) {
+        loadUserProfile(session.user.id);
+      }
+      
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const register = async (email: string, password: string, nome: string, telefone?: string) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            nome,
+            telefone
+          }
+        }
+      });
+
+      if (error) return { error };
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const login = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) return { error };
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setSession(null);
   };
 
   const hasPermission = (permission: string): boolean => {
@@ -170,7 +267,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user,
+      session,
+      loading,
       login,
+      register,
       logout,
       hasPermission,
       canAccess

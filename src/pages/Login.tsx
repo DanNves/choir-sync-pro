@@ -8,12 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Music } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 const loginHero = "/lovable-uploads/03654e25-5cfc-4470-8406-3d354b092da4.png";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login, user } = useAuth();
+  const { login, register, user, loading } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -25,23 +26,82 @@ const Login = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const formData = new FormData(e.currentTarget as HTMLFormElement);
-      const email = formData.get("email") as string;
-      const password = formData.get("password") as string;
-      
-      await login(email, password);
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    
+    const { error } = await login(email, password);
+    
+    if (error) {
+      toast({
+        title: "Erro ao fazer login",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Redirecionando..."
+      });
       navigate("/");
-    } catch (error) {
-      console.error("Login error:", error);
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Lógica de cadastro será implementada após integração com Supabase
-    console.log("Register form submitted");
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
+    const email = formData.get("registerEmail") as string;
+    const telefone = formData.get("phone") as string;
+    const password = formData.get("registerPassword") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Erro no cadastro",
+        description: "As senhas não coincidem",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Erro no cadastro",
+        description: "A senha deve ter no mínimo 6 caracteres",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const nome = `${firstName} ${lastName}`;
+    const { error } = await register(email, password, nome, telefone);
+
+    if (error) {
+      toast({
+        title: "Erro ao criar conta",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Você já pode fazer login"
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Music className="h-10 w-10 mx-auto mb-4 animate-pulse text-primary" />
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex overflow-hidden">
@@ -181,6 +241,7 @@ const Login = () => {
                         <Label htmlFor="firstName">Nome</Label>
                         <Input
                           id="firstName"
+                          name="firstName"
                           placeholder="Seu nome"
                           required
                         />
@@ -189,6 +250,7 @@ const Login = () => {
                         <Label htmlFor="lastName">Sobrenome</Label>
                         <Input
                           id="lastName"
+                          name="lastName"
                           placeholder="Seu sobrenome"
                           required
                         />
@@ -198,6 +260,7 @@ const Login = () => {
                       <Label htmlFor="registerEmail">E-mail</Label>
                       <Input
                         id="registerEmail"
+                        name="registerEmail"
                         type="email"
                         placeholder="seu@email.com"
                         required
@@ -207,6 +270,7 @@ const Login = () => {
                       <Label htmlFor="phone">Telefone</Label>
                       <Input
                         id="phone"
+                        name="phone"
                         type="tel"
                         placeholder="(11) 99999-9999"
                       />
@@ -216,8 +280,10 @@ const Login = () => {
                       <div className="relative">
                         <Input
                           id="registerPassword"
+                          name="registerPassword"
                           type={showPassword ? "text" : "password"}
                           placeholder="Mínimo 6 caracteres"
+                          minLength={6}
                           required
                         />
                         <Button
@@ -240,8 +306,10 @@ const Login = () => {
                       <div className="relative">
                         <Input
                           id="confirmPassword"
+                          name="confirmPassword"
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="Confirme sua senha"
+                          minLength={6}
                           required
                         />
                         <Button
