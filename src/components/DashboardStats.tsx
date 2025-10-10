@@ -10,9 +10,17 @@ import {
   CheckCircle
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { useProfiles } from "@/hooks/useProfiles"
+import { useEvents } from "@/hooks/useEvents"
+import { useAttendances } from "@/hooks/useAttendances"
+import { useTeams } from "@/hooks/useTeams"
 
 export function DashboardStats() {
   const navigate = useNavigate()
+  const { profiles } = useProfiles()
+  const { events } = useEvents()
+  const { attendances } = useAttendances()
+  const { teams } = useTeams()
 
   const handleNavigateToEvents = () => {
     navigate('/eventos')
@@ -25,65 +33,70 @@ export function DashboardStats() {
   const handleNavigateToRanking = () => {
     navigate('/ranking')
   }
-  const stats = [
+
+  const currentMonth = new Date().getMonth()
+  const eventsThisMonth = events.filter(e => {
+    const eventMonth = new Date(e.data).getMonth()
+    return eventMonth === currentMonth
+  }).length
+
+  const attendanceRate = attendances.length > 0 
+    ? ((attendances.filter(a => a.status === 'Presente').length / attendances.length) * 100).toFixed(1)
+    : "0"
+
+  const upcomingEvents = events
+    .filter(e => new Date(e.data) >= new Date())
+    .slice(0, 3)
+    .map(e => ({
+      id: e.id,
+      title: e.nome,
+      time: `${e.horario}`,
+      date: new Date(e.data).toLocaleDateString('pt-BR'),
+      status: e.status.toLowerCase() as 'aberto' | 'agendado',
+      participants: e.participantes_esperados
+    }))
+  
+  type ChangeType = 'positive' | 'neutral' | 'negative'
+  
+  const stats: Array<{
+    title: string
+    value: string
+    change: string
+    changeType: ChangeType
+    icon: any
+    color: string
+  }> = [
     {
       title: "Membros Ativos",
-      value: "243",
+      value: profiles.length.toString(),
       change: "+12%",
-      changeType: "positive" as const,
+      changeType: "positive",
       icon: Users,
       color: "text-primary"
     },
     {
       title: "Eventos este Mês",
-      value: "18",
+      value: eventsThisMonth.toString(),
       change: "+3 novos",
-      changeType: "neutral" as const,
+      changeType: "neutral",
       icon: Calendar,
       color: "text-accent"
     },
     {
       title: "Presença Média",
-      value: "87.5%",
+      value: `${attendanceRate}%`,
       change: "+5.2%",
-      changeType: "positive" as const,
+      changeType: "positive",
       icon: TrendingUp,
       color: "text-success"
     },
     {
-      title: "Taxa de Conclusão",
-      value: "92.3%",
-      change: "-1.1%",
-      changeType: "negative" as const,
+      title: "Equipes Ativas",
+      value: teams.length.toString(),
+      change: `${teams.length} equipes`,
+      changeType: "neutral",
       icon: Award,
       color: "text-info"
-    }
-  ]
-
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: "Ensaio Coral Juvenil",
-      time: "19:00 - 21:00",
-      date: "Hoje",
-      status: "aberto" as const,
-      participants: 45
-    },
-    {
-      id: 2,
-      title: "Reunião de Instrumentistas",
-      time: "20:00 - 22:00", 
-      date: "Amanhã",
-      status: "agendado" as const,
-      participants: 23
-    },
-    {
-      id: 3,
-      title: "Avaliação Técnica Mensal",
-      time: "14:00 - 17:00",
-      date: "Sábado",
-      status: "agendado" as const,
-      participants: 67
     }
   ]
 
