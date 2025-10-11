@@ -27,18 +27,7 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-              <ConditionalRender permission="manage_users">
-                <DashboardStats />
-              </ConditionalRender>
-              <ConditionalRender resource="usuarios" fallback={
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">
-                    Acesso limitado. Entre em contato com seu administrador para mais informações.
-                  </p>
-                </div>
-              }>
-                <DashboardStats />
-              </ConditionalRender>
+              <DashboardStats />
             </div>
           </main>
         </div>
