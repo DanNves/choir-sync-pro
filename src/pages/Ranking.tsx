@@ -23,19 +23,61 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { getRankingStats } from "@/lib/rankingCalculations"
 import { useState, useEffect } from "react"
+import { useAttendances } from "@/hooks/useAttendances"
+import { useEvents } from "@/hooks/useEvents"
+import { useProfiles } from "@/hooks/useProfiles"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 const Ranking = () => {
+  const { attendances, isLoading: loadingAttendances } = useAttendances()
+  const { events, isLoading: loadingEvents } = useEvents()
+  const { profiles, isLoading: loadingProfiles } = useProfiles()
   const [rankingData, setRankingData] = useState<any>(null)
 
   useEffect(() => {
-    // Calculate rankings on component mount
-    const data = getRankingStats()
-    setRankingData(data)
-  }, [])
+    if (loadingAttendances || loadingEvents || loadingProfiles) return
+    
+    // Calculate rankings from real data
+    const individualRanking = profiles.map((profile: any, index: number) => {
+      const userAttendances = attendances.filter((att: any) => att.user_id === profile.id)
+      const totalEvents = events.length
+      const presencaPercent = totalEvents > 0 ? (userAttendances.length / totalEvents) * 100 : 0
+      const pontuacao = Math.round(presencaPercent * 10)
+      
+      return {
+        posicao: index + 1,
+        nome: profile.nome,
+        equipe: profile.localidade || 'Sem equipe',
+        instrumento: profile.instrumento || 'N/A',
+        pontuacao,
+        presenca: presencaPercent,
+        notaMedia: 8.5, // Mock para agora
+        mudanca: 0,
+        medalhas: { ouro: 0, prata: 0, bronze: 0 }
+      }
+    }).sort((a, b) => b.pontuacao - a.pontuacao)
+    
+    // Recalculate positions after sorting
+    individualRanking.forEach((item, index) => {
+      item.posicao = index + 1
+    })
 
-  if (!rankingData) {
+    const data = {
+      individualRanking: individualRanking.slice(0, 10),
+      teamRanking: [],
+      recentAchievements: [],
+      totalParticipants: profiles.length,
+      maxScore: individualRanking[0]?.pontuacao || 0,
+      averageScore: Math.round(individualRanking.reduce((sum, item) => sum + item.pontuacao, 0) / individualRanking.length) || 0,
+      totalAchievements: 0
+    }
+    
+    setRankingData(data)
+  }, [attendances, events, profiles, loadingAttendances, loadingEvents, loadingProfiles])
+
+  if (!rankingData || loadingAttendances || loadingEvents || loadingProfiles) {
     return (
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">

@@ -48,98 +48,76 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { useAttendances } from "@/hooks/useAttendances"
+import { useEvents } from "@/hooks/useEvents"
+import { useProfiles } from "@/hooks/useProfiles"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 const Presencas = () => {
   const { toast } = useToast()
+  const { attendances, isLoading: loadingAttendances, createAttendance } = useAttendances()
+  const { events, isLoading: loadingEvents } = useEvents()
+  const { profiles, isLoading: loadingProfiles } = useProfiles()
+  
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedParticipant, setSelectedParticipant] = useState("")
+  const [selectedEventId, setSelectedEventId] = useState<string>("")
+
+  // Get current/active event (most recent)
+  const eventoAtual = events.length > 0 ? events[0] : null
   
-  const eventoAtual = {
-    titulo: "Ensaio Coral Juvenil",
-    data: "2024-01-20",
-    horario: "19:00 - 21:00",
-    status: "Em Andamento",
-    participantes: 45,
-    presencas: 38,
-    qrCodeAtivo: true
-  }
+  useEffect(() => {
+    if (eventoAtual) {
+      setSelectedEventId(eventoAtual.id)
+    }
+  }, [eventoAtual])
 
-  const [presencasRecentes, setPresencasRecentes] = useState([
-    {
-      id: 1,
-      nome: "João Silva",
-      horario: "19:15",
-      metodo: "QR Code",
-      status: "Presente",
-      instrumento: "Violão"
-    },
-    {
-      id: 2,
-      nome: "Maria Santos", 
-      horario: "19:12",
-      metodo: "QR Code",
-      status: "Presente",
-      instrumento: "Órgão"
-    },
-    {
-      id: 3,
-      nome: "Pedro Costa",
-      horario: "19:18",
+  // Get attendances for selected event
+  const presencasRecentes = attendances
+    .filter((att: any) => att.event_id === selectedEventId)
+    .map((att: any) => ({
+      id: att.id,
+      nome: att.profiles?.nome || 'N/A',
+      horario: att.horario_entrada || format(new Date(att.created_at), 'HH:mm'),
       metodo: "Manual",
-      status: "Presente",
-      instrumento: "Bateria"
-    },
-    {
-      id: 4,
-      nome: "Ana Oliveira",
-      horario: "19:05",
-      metodo: "QR Code", 
-      status: "Presente",
-      instrumento: "Piano"
-    }
-  ])
+      status: att.status,
+      instrumento: att.profiles?.instrumento || 'N/A'
+    }))
 
-  // Lista de participantes do evento
-  const participantesEvento = [
-    { id: 5, nome: "Carlos Mendes", instrumento: "Guitarra" },
-    { id: 6, nome: "Lucia Ferreira", instrumento: "Flauta" },
-    { id: 7, nome: "Roberto Silva", instrumento: "Saxofone" },
-    { id: 8, nome: "Helena Costa", instrumento: "Violino" },
-    { id: 9, nome: "Eduardo Santos", instrumento: "Trompete" },
-    { id: 10, nome: "Fernanda Lima", instrumento: "Clarinete" },
-    { id: 11, nome: "André Oliveira", instrumento: "Teclado" },
-    // Adicionar mais participantes conforme necessário
-  ]
+  // Get available participants (profiles not yet checked in)
+  const checkedInUserIds = attendances
+    .filter((att: any) => att.event_id === selectedEventId)
+    .map((att: any) => att.user_id)
+  
+  const participantesEvento = profiles
+    .filter((profile: any) => !checkedInUserIds.includes(profile.id))
+    .map((profile: any) => ({
+      id: profile.id,
+      nome: profile.nome,
+      instrumento: profile.instrumento || 'N/A'
+    }))
 
-  const historicoEventos = [
-    {
-      id: 1,
-      evento: "Reunião de Instrumentistas",
-      data: "2024-01-19",
-      participantes: 23,
-      presencas: 21,
-      taxa: 91.3
-    },
-    {
-      id: 2,
-      evento: "Ensaio Coral Adulto",
-      data: "2024-01-18", 
-      participantes: 67,
-      presencas: 58,
-      taxa: 86.6
-    },
-    {
-      id: 3,
-      evento: "Avaliação Técnica",
-      data: "2024-01-15",
-      participantes: 34,
-      presencas: 32,
-      taxa: 94.1
+  // Calculate historic events stats
+  const historicoEventos = events.slice(1, 4).map((event: any) => {
+    const eventAttendances = attendances.filter((att: any) => att.event_id === event.id)
+    const presencasCount = eventAttendances.length
+    const taxa = event.participantes_esperados > 0 
+      ? (presencasCount / event.participantes_esperados) * 100 
+      : 0
+    
+    return {
+      id: event.id,
+      evento: event.nome,
+      data: format(new Date(event.data), 'dd/MM/yyyy', { locale: ptBR }),
+      participantes: event.participantes_esperados,
+      presencas: presencasCount,
+      taxa: Math.round(taxa * 10) / 10
     }
-  ]
+  })
 
   const getMetodoColor = (metodo: string) => {
     return metodo === 'QR Code' ? 'default' : 'secondary'
@@ -149,11 +127,6 @@ const Presencas = () => {
     if (taxa >= 90) return 'text-success'
     if (taxa >= 80) return 'text-warning'
     return 'text-destructive'
-  }
-
-  // Função para verificar se participante já fez check-in
-  const jaFezCheckin = (nomeParticipante: string) => {
-    return presencasRecentes.some(presenca => presenca.nome === nomeParticipante)
   }
 
   // Função para realizar check-in manual
@@ -167,7 +140,16 @@ const Presencas = () => {
       return
     }
 
-    const participanteSelecionado = participantesEvento.find(p => p.id.toString() === selectedParticipant)
+    if (!selectedEventId) {
+      toast({
+        title: "Erro",
+        description: "Nenhum evento selecionado.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const participanteSelecionado = participantesEvento.find(p => p.id === selectedParticipant)
     
     if (!participanteSelecionado) {
       toast({
@@ -178,32 +160,16 @@ const Presencas = () => {
       return
     }
 
-    // Verificar se já fez check-in
-    if (jaFezCheckin(participanteSelecionado.nome)) {
-      toast({
-        title: "Check-in Duplicado",
-        description: `${participanteSelecionado.nome} já fez check-in para este evento.`,
-        variant: "destructive",
-      })
-      return
+    // Create attendance record
+    const now = new Date()
+    const attendanceData = {
+      user_id: selectedParticipant,
+      event_id: selectedEventId,
+      status: 'Presente',
+      horario_entrada: format(now, 'HH:mm:ss')
     }
 
-    // Adicionar nova presença
-    const novaPresenca = {
-      id: presencasRecentes.length + 1,
-      nome: participanteSelecionado.nome,
-      horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      metodo: "Manual",
-      status: "Presente",
-      instrumento: participanteSelecionado.instrumento
-    }
-
-    setPresencasRecentes(prev => [novaPresenca, ...prev])
-    
-    toast({
-      title: "Check-in Realizado",
-      description: `${participanteSelecionado.nome} foi marcado como presente.`,
-    })
+    createAttendance(attendanceData)
 
     // Limpar e fechar modal
     setSelectedParticipant("")
@@ -213,9 +179,39 @@ const Presencas = () => {
 
   // Filtrar participantes disponíveis (que ainda não fizeram check-in)
   const participantesDisponiveis = participantesEvento.filter(participante => 
-    !jaFezCheckin(participante.nome) && 
     participante.nome.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  if (loadingAttendances || loadingEvents || loadingProfiles) {
+    return (
+      <ProtectedRoute resource="presencas">
+        <SidebarProvider>
+          <div className="min-h-screen flex w-full bg-background">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col">
+              <Header />
+              <main className="flex-1 p-6 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Carregando presenças...</p>
+                </div>
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
+      </ProtectedRoute>
+    )
+  }
+
+  const eventStats = eventoAtual ? {
+    titulo: eventoAtual.nome,
+    data: format(new Date(eventoAtual.data), 'dd/MM/yyyy', { locale: ptBR }),
+    horario: `${eventoAtual.horario} - ${eventoAtual.duracao}min`,
+    status: eventoAtual.status,
+    participantes: eventoAtual.participantes_esperados,
+    presencas: presencasRecentes.length,
+    qrCodeAtivo: true
+  } : null
 
   return (
     <ProtectedRoute resource="presencas">
@@ -269,10 +265,10 @@ const Presencas = () => {
                           <SelectTrigger>
                             <SelectValue placeholder="Escolha um participante disponível" />
                           </SelectTrigger>
-                          <SelectContent>
+                           <SelectContent>
                             {participantesDisponiveis.length > 0 ? (
                               participantesDisponiveis.map((participante) => (
-                                <SelectItem key={participante.id} value={participante.id.toString()}>
+                                <SelectItem key={participante.id} value={participante.id}>
                                   <div className="flex justify-between items-center w-full">
                                     <span>{participante.nome}</span>
                                     <span className="text-muted-foreground text-sm ml-2">
@@ -312,71 +308,79 @@ const Presencas = () => {
               </div>
 
               {/* Evento Atual */}
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-primary" />
-                    Evento em Andamento
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-2">{eventoAtual.titulo}</h3>
-                      <div className="space-y-1 text-sm text-muted-foreground">
-                        <p className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          {eventoAtual.data} • {eventoAtual.horario}
-                        </p>
-                        <p className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          {eventoAtual.presencas}/{eventoAtual.participantes} participantes
-                        </p>
+              {eventStats ? (
+                <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-primary" />
+                      Evento em Andamento
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">{eventStats.titulo}</h3>
+                        <div className="space-y-1 text-sm text-muted-foreground">
+                          <p className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            {eventStats.data} • {eventStats.horario}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Users className="w-4 h-4" />
+                            {eventStats.presencas}/{eventStats.participantes} participantes
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">Taxa de Presença</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold text-foreground">
+                              {eventStats.participantes > 0 ? Math.round((eventStats.presencas / eventStats.participantes) * 100) : 0}%
+                            </span>
+                            <Badge variant="default" className="gap-1">
+                              <TrendingUp className="w-3 h-3" />
+                              +5.2%
+                            </Badge>
+                          </div>
+                          <Progress 
+                            value={eventStats.participantes > 0 ? (eventStats.presencas / eventStats.participantes) * 100 : 0} 
+                            className="h-2"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-center">
+                        {eventStats.qrCodeAtivo ? (
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                              <QrCode className="w-8 h-8 text-primary" />
+                            </div>
+                            <p className="text-sm font-medium text-foreground">QR Code Ativo</p>
+                            <Button variant="outline" size="sm" className="mt-2">
+                              Renovar QR
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <div className="w-16 h-16 bg-muted/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                              <XCircle className="w-8 h-8 text-muted-foreground" />
+                            </div>
+                            <p className="text-sm text-muted-foreground">Check-in Fechado</p>
+                          </div>
+                        )}
                       </div>
                     </div>
-
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Taxa de Presença</p>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-2xl font-bold text-foreground">
-                            {Math.round((eventoAtual.presencas / eventoAtual.participantes) * 100)}%
-                          </span>
-                          <Badge variant="default" className="gap-1">
-                            <TrendingUp className="w-3 h-3" />
-                            +5.2%
-                          </Badge>
-                        </div>
-                        <Progress 
-                          value={(eventoAtual.presencas / eventoAtual.participantes) * 100} 
-                          className="h-2"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-center">
-                      {eventoAtual.qrCodeAtivo ? (
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                            <QrCode className="w-8 h-8 text-primary" />
-                          </div>
-                          <p className="text-sm font-medium text-foreground">QR Code Ativo</p>
-                          <Button variant="outline" size="sm" className="mt-2">
-                            Renovar QR
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="text-center">
-                          <div className="w-16 h-16 bg-muted/20 rounded-lg flex items-center justify-center mx-auto mb-2">
-                            <XCircle className="w-8 h-8 text-muted-foreground" />
-                          </div>
-                          <p className="text-sm text-muted-foreground">Check-in Fechado</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                  <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground">Nenhum evento ativo no momento.</p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Tabs */}
               <Tabs defaultValue="tempo-real" className="space-y-6">
@@ -394,9 +398,9 @@ const Presencas = () => {
                           <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
                             <CheckCircle className="w-6 h-6 text-success" />
                           </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Presentes</p>
-                            <p className="text-2xl font-bold text-foreground">38</p>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Presentes</p>
+                          <p className="text-2xl font-bold text-foreground">{presencasRecentes.length}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -408,9 +412,9 @@ const Presencas = () => {
                           <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center">
                             <XCircle className="w-6 h-6 text-warning" />
                           </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Ausentes</p>
-                            <p className="text-2xl font-bold text-foreground">7</p>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Ausentes</p>
+                          <p className="text-2xl font-bold text-foreground">{eventStats ? eventStats.participantes - presencasRecentes.length : 0}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -422,9 +426,9 @@ const Presencas = () => {
                           <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
                             <QrCode className="w-6 h-6 text-accent" />
                           </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Via QR Code</p>
-                            <p className="text-2xl font-bold text-foreground">35</p>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Via QR Code</p>
+                          <p className="text-2xl font-bold text-foreground">{presencasRecentes.filter(p => p.metodo === 'QR Code').length}</p>
                           </div>
                         </div>
                       </CardContent>

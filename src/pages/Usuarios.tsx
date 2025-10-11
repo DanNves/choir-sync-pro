@@ -6,6 +6,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { ConditionalRender } from "@/components/ConditionalRender"
 import { useProfiles } from "@/hooks/useProfiles"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -104,7 +105,7 @@ const Usuarios = () => {
     return newErrors
   }
 
-  const handleSubmitNovoUsuario = (e: React.FormEvent) => {
+  const handleSubmitNovoUsuario = async (e: React.FormEvent) => {
     e.preventDefault()
     
     const formErrors = validateForm(novoUsuario)
@@ -117,22 +118,55 @@ const Usuarios = () => {
       ? novoUsuario.instrumentoOutro 
       : novoUsuario.instrumento
 
-    // TODO: Implement user creation with Supabase Auth
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A criação de usuários será implementada em breve."
-    })
-    
-    setDialogOpen(false)
-    setErrors({})
-    setNovoUsuario({
-      nome: "",
-      email: "",
-      papel: "",
-      local: "",
-      instrumento: "",
-      instrumentoOutro: ""
-    })
+    try {
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: novoUsuario.email,
+        password: 'senha-temporaria-123',
+        email_confirm: true,
+        user_metadata: {
+          nome: novoUsuario.nome,
+          telefone: ''
+        }
+      })
+
+      if (authError) throw authError
+
+      // Update profile with additional info
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            instrumento: instrumentoFinal,
+            localidade: novoUsuario.local
+          })
+          .eq('id', authData.user.id)
+        
+        if (profileError) throw profileError
+      }
+
+      toast({
+        title: "Usuário criado",
+        description: "O novo usuário foi criado com sucesso.",
+      })
+      
+      setDialogOpen(false)
+      setErrors({})
+      setNovoUsuario({
+        nome: "",
+        email: "",
+        papel: "",
+        local: "",
+        instrumento: "",
+        instrumentoOutro: ""
+      })
+    } catch (error: any) {
+      toast({
+        title: "Erro ao criar usuário",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
   }
 
   const handleEditUsuario = (usuario: any) => {
@@ -169,12 +203,22 @@ const Usuarios = () => {
     setErrors({})
   }
 
-  const handleRemoverUsuario = (id: string) => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "A remoção de usuários será implementada em breve.",
-      variant: "destructive"
-    })
+  const handleRemoverUsuario = async (id: string) => {
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(id)
+      if (error) throw error
+
+      toast({
+        title: "Usuário removido",
+        description: "O usuário foi removido do sistema.",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Erro ao remover usuário",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
   }
 
   // Filtrar usuários baseado na busca
