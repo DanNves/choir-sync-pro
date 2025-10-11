@@ -1,9 +1,11 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { ConditionalRender } from "@/components/ConditionalRender"
+import { useProfiles } from "@/hooks/useProfiles"
+import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,6 +52,8 @@ import {
 } from "@/components/ui/select"
 
 const Usuarios = () => {
+  const { profiles, isLoading, updateProfile } = useProfiles()
+  const { toast } = useToast()
   const [busca, setBusca] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -64,48 +68,16 @@ const Usuarios = () => {
   })
   const [errors, setErrors] = useState<{[key: string]: string}>({})
 
-  const [usuarios, setUsuarios] = useState([
-    {
-      id: 1,
-      nome: "João Silva",
-      email: "joao.silva@email.com",
-      papel: "Músico",
-      local: "Centro - São Paulo - SP - Brasil",
-      status: "Ativo",
-      instrumento: "Violão",
-      ultimoAcesso: "Hoje, 14:30"
-    },
-    {
-      id: 2,
-      nome: "Maria Santos",
-      email: "maria.santos@email.com", 
-      papel: "Organista",
-      local: "Centro - Salvador - BA - Brasil",
-      status: "Ativo",
-      instrumento: "Órgão",
-      ultimoAcesso: "Ontem, 19:45"
-    },
-    {
-      id: 3,
-      nome: "Pedro Costa",
-      email: "pedro.costa@email.com",
-      papel: "Ancião",
-      local: "Norte - Rio de Janeiro - RJ - Brasil",
-      status: "Pendente",
-      instrumento: "Não possui",
-      ultimoAcesso: "2 dias atrás"
-    },
-    {
-      id: 4,
-      nome: "Ana Oliveira",
-      email: "ana.oliveira@email.com",
-      papel: "Instrutor",
-      local: "Centro - Belo Horizonte - MG - Brasil", 
-      status: "Ativo",
-      instrumento: "Piano",
-      ultimoAcesso: "Hoje, 16:20"
-    }
-  ])
+  const usuarios = profiles.map((profile: any) => ({
+    id: profile.id,
+    nome: profile.nome,
+    email: profile.id,
+    papel: profile.user_roles?.[0]?.role || 'candidato',
+    local: profile.localidade || 'Não informado',
+    status: "Ativo",
+    instrumento: profile.instrumento || 'Não possui',
+    ultimoAcesso: "Hoje"
+  }))
 
   const validateForm = (data: any, isEdit = false) => {
     const newErrors: {[key: string]: string} = {}
@@ -145,20 +117,11 @@ const Usuarios = () => {
       ? novoUsuario.instrumentoOutro 
       : novoUsuario.instrumento
 
-    const novoId = Math.max(...usuarios.map(u => u.id)) + 1
-    
-    const usuarioCompleto = {
-      id: novoId,
-      nome: novoUsuario.nome,
-      email: novoUsuario.email,
-      papel: novoUsuario.papel,
-      local: novoUsuario.local,
-      status: "Ativo",
-      instrumento: instrumentoFinal,
-      ultimoAcesso: "Agora mesmo"
-    }
-
-    setUsuarios([...usuarios, usuarioCompleto])
+    // TODO: Implement user creation with Supabase Auth
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "A criação de usuários será implementada em breve."
+    })
     
     setDialogOpen(false)
     setErrors({})
@@ -194,22 +157,24 @@ const Usuarios = () => {
       ? usuarioEditando.instrumentoOutro 
       : usuarioEditando.instrumento
 
-    const usuarioAtualizado = {
-      ...usuarioEditando,
-      instrumento: instrumentoFinal
-    }
-
-    setUsuarios(usuarios.map(u => 
-      u.id === usuarioEditando.id ? usuarioAtualizado : u
-    ))
+    updateProfile({
+      id: usuarioEditando.id,
+      nome: usuarioEditando.nome,
+      instrumento: instrumentoFinal,
+      localidade: usuarioEditando.local
+    })
     
     setEditDialogOpen(false)
     setUsuarioEditando(null)
     setErrors({})
   }
 
-  const handleRemoverUsuario = (id: number) => {
-    setUsuarios(usuarios.filter(u => u.id !== id))
+  const handleRemoverUsuario = (id: string) => {
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "A remoção de usuários será implementada em breve.",
+      variant: "destructive"
+    })
   }
 
   // Filtrar usuários baseado na busca

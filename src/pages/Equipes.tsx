@@ -1,5 +1,7 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { useTeams } from "@/hooks/useTeams"
+import { useProfiles } from "@/hooks/useProfiles"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
@@ -136,83 +138,69 @@ interface Team {
 
 const Equipes = () => {
   const { toast } = useToast()
+  const { teams, isLoading, createTeam, updateTeam, addMember, removeMember } = useTeams()
+  const { profiles } = useProfiles()
   
   // Modal states
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [addMemberModalOpen, setAddMemberModalOpen] = useState(false)
   const [settingsModalOpen, setSettingsModalOpen] = useState(false)
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
+  const [selectedTeam, setSelectedTeam] = useState<any>(null)
 
-  // Initial teams data following the requested structure
-  const [equipes, setEquipes] = useState<Team[]>([
-    {
-      id: "team1",
-      name: "Coral Juvenil",
-      leaderId: 2,
-      limit: 15,
-      members: [
-        { userId: 2, nome: "Maria Santos", instrumento: "Órgão" },
-        { userId: 1, nome: "João Silva", instrumento: "Violão" },
-        { userId: 8, nome: "Juliana Alves", instrumento: "Vocal" }
-      ],
-      description: "Coral dedicado aos jovens da congregação",
-      status: "Ativa",
-      ultimoEnsaio: "Hoje, 19:00",
-      proximoEvento: "Apresentação - Dom, 14:00"
-    },
-    {
-      id: "team2",
-      name: "Banda de Instrumentistas",
-      leaderId: 4,
-      limit: 10,
-      members: [
-        { userId: 4, nome: "Ana Oliveira", instrumento: "Piano" },
-        { userId: 7, nome: "Roberto Mendes", instrumento: "Bateria" },
-        { userId: 5, nome: "Carlos Lima", instrumento: "Violino" }
-      ],
-      description: "Grupo instrumental para acompanhamento musical",
-      status: "Ativa",
-      ultimoEnsaio: "Ontem, 20:00",
-      proximoEvento: "Ensaio - Qua, 19:30"
-    }
-  ])
+  const mockUsers = profiles.map((profile: any) => ({
+    id: profile.id,
+    nome: profile.nome,
+    instrumento: profile.instrumento || 'Não possui',
+    email: profile.id,
+    papel: profile.user_roles?.[0]?.role || 'candidato',
+    status: 'Ativo'
+  }))
 
-  const handleTeamCreate = (teamData: Omit<Team, 'id'>) => {
-    const newTeam: Team = {
-      ...teamData,
-      id: `team${Date.now()}`,
-      status: "Ativa",
-      ultimoEnsaio: "Nenhum ainda",
-      proximoEvento: "A definir"
-    }
-    setEquipes(prev => [...prev, newTeam])
+  const equipes = teams.map((team: any) => ({
+    id: team.id,
+    name: team.nome,
+    leaderId: team.instrutor_id,
+    limit: 15,
+    members: team.team_members?.map((tm: any) => ({
+      userId: tm.user_id,
+      nome: tm.profiles?.nome || 'Desconhecido',
+      instrumento: tm.profiles?.instrumento || 'Não possui'
+    })) || [],
+    description: team.descricao,
+    status: "Ativa",
+    ultimoEnsaio: "Hoje",
+    proximoEvento: "A definir"
+  }))
+
+  const handleTeamCreate = (teamData: any) => {
+    createTeam({
+      nome: teamData.name,
+      tipo: 'musical',
+      descricao: teamData.description,
+      instrutor_id: teamData.leaderId,
+      localidade: 'Central'
+    })
   }
 
-  const handleTeamUpdate = (updatedTeam: Team) => {
-    setEquipes(prev => prev.map(team => 
-      team.id === updatedTeam.id ? updatedTeam : team
-    ))
+  const handleTeamUpdate = (updatedTeam: any) => {
+    updateTeam({
+      id: updatedTeam.id,
+      nome: updatedTeam.name,
+      descricao: updatedTeam.description,
+      instrutor_id: updatedTeam.leaderId
+    })
   }
 
-  const handleAddMembers = (memberIds: number[]) => {
+  const handleAddMembers = (memberIds: any[]) => {
     if (!selectedTeam) return
 
-    const newMembers: TeamMember[] = memberIds.map(userId => {
-      const user = mockUsers.find(u => u.id === userId)!
-      return {
-        userId: user.id,
-        nome: user.nome,
-        instrumento: user.instrumento
-      }
+    memberIds.forEach(userId => {
+      addMember({
+        team_id: selectedTeam.id,
+        user_id: userId
+      })
     })
-
-    const updatedTeam = {
-      ...selectedTeam,
-      members: [...selectedTeam.members, ...newMembers]
-    }
-
-    handleTeamUpdate(updatedTeam)
   }
 
   const openEditModal = (team: Team) => {
@@ -328,7 +316,7 @@ const Equipes = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {equipes.map((equipe) => {
                   const leader = mockUsers.find(u => u.id === equipe.leaderId)
-                  const instrumentos = [...new Set(equipe.members.map(m => m.instrumento))]
+                  const instrumentos = [...new Set(equipe.members.map(m => m.instrumento))] as string[]
                   
                   return (
                     <Card key={equipe.id} className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">

@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { useEvents } from "@/hooks/useEvents"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
@@ -36,56 +37,20 @@ import {
 
 const Eventos = () => {
   const { toast } = useToast()
-  const [eventos, setEventos] = useState([
-    {
-      id: 1,
-      titulo: "Ensaio Coral Juvenil",
-      tipo: "Ensaio",
-      data: "2024-01-20",
-      horario: "19:00 - 21:00",
-      local: "São Paulo - Central",
-      participantes: 45,
-      status: "Aberto",
-      presencas: 38,
-      qrCode: true
-    },
-    {
-      id: 2,
-      titulo: "Reunião de Instrumentistas", 
-      tipo: "Reunião",
-      data: "2024-01-21",
-      horario: "20:00 - 22:00",
-      local: "São Paulo - Central",
-      participantes: 23,
-      status: "Agendado",
-      presencas: 0,
-      qrCode: false
-    },
-    {
-      id: 3,
-      titulo: "Avaliação Técnica Mensal",
-      tipo: "Avaliação",
-      data: "2024-01-25",
-      horario: "14:00 - 17:00", 
-      local: "Rio de Janeiro - Norte",
-      participantes: 67,
-      status: "Agendado",
-      presencas: 0,
-      qrCode: false
-    },
-    {
-      id: 4,
-      titulo: "Encontro Regional de Músicos",
-      tipo: "Encontro",
-      data: "2024-01-15",
-      horario: "09:00 - 18:00",
-      local: "São Paulo - Regional",
-      participantes: 156,
-      status: "Finalizado",
-      presencas: 142,
-      qrCode: true
-    }
-  ])
+  const { events, isLoading, createEvent, updateEvent, deleteEvent } = useEvents()
+  
+  const eventos = events.map((event: any) => ({
+    id: event.id,
+    titulo: event.nome,
+    tipo: event.tipo,
+    data: event.data,
+    horario: `${event.horario} - ${event.duracao}min`,
+    local: event.local,
+    participantes: event.participantes_esperados,
+    status: event.status,
+    presencas: 0,
+    qrCode: false
+  }))
 
   const [selectedEvento, setSelectedEvento] = useState(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
@@ -139,36 +104,21 @@ const Eventos = () => {
   }
 
   const handleSaveEdit = () => {
-    const updatedEventos = eventos.map(evento => 
-      evento.id === selectedEvento.id 
-        ? {
-            ...evento,
-            titulo: editForm.titulo,
-            tipo: editForm.tipo,
-            data: editForm.data,
-            horario: editForm.horario,
-            local: editForm.local,
-            participantes: parseInt(editForm.participantes),
-            status: editForm.status
-          }
-        : evento
-    )
-    setEventos(updatedEventos)
-    setIsEditOpen(false)
-    toast({
-      title: "Evento atualizado",
-      description: "As informações do evento foram atualizadas com sucesso."
+    updateEvent({
+      id: selectedEvento.id,
+      nome: editForm.titulo,
+      tipo: editForm.tipo,
+      data: editForm.data,
+      horario: editForm.horario.split(' - ')[0],
+      local: editForm.local,
+      participantes_esperados: parseInt(editForm.participantes),
+      status: editForm.status
     })
+    setIsEditOpen(false)
   }
 
-  const handleDelete = (eventoId) => {
-    const updatedEventos = eventos.filter(evento => evento.id !== eventoId)
-    setEventos(updatedEventos)
-    toast({
-      title: "Evento cancelado",
-      description: "O evento foi cancelado com sucesso.",
-      variant: "destructive"
-    })
+  const handleDelete = (eventoId: string) => {
+    deleteEvent(eventoId)
   }
 
   const handleGenerateQR = (evento) => {
@@ -181,67 +131,27 @@ const Eventos = () => {
   }
 
   const handleSaveNew = () => {
-    // Validações
-    if (!newForm.titulo.trim()) {
+    if (!newForm.titulo.trim() || !newForm.data || !newForm.horario.trim() || !newForm.local.trim() || !newForm.tipo) {
       toast({
         title: "Erro de validação",
-        description: "O título do evento é obrigatório.",
+        description: "Preencha todos os campos obrigatórios.",
         variant: "destructive"
       })
       return
     }
 
-    if (!newForm.data) {
-      toast({
-        title: "Erro de validação", 
-        description: "A data é obrigatória.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    if (!newForm.horario.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "O horário é obrigatório.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    if (!newForm.local.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "O local é obrigatório.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    if (!newForm.tipo) {
-      toast({
-        title: "Erro de validação",
-        description: "O tipo de evento deve ser selecionado.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    // Criar novo evento
-    const novoEvento = {
-      id: Math.max(...eventos.map(e => e.id)) + 1,
-      titulo: newForm.titulo,
+    createEvent({
+      nome: newForm.titulo,
       tipo: newForm.tipo,
       data: newForm.data,
       horario: newForm.horario,
       local: newForm.local,
-      participantes: parseInt(newForm.participantes) || 0,
-      status: 'Agendado',
-      presencas: 0,
-      qrCode: false
-    }
+      participantes_esperados: parseInt(newForm.participantes) || 0,
+      duracao: 120,
+      responsavel: 'Sistema',
+      status: 'Agendado'
+    })
 
-    setEventos([...eventos, novoEvento])
     setNewForm({
       titulo: '',
       tipo: '',
@@ -251,11 +161,6 @@ const Eventos = () => {
       participantes: ''
     })
     setIsNewOpen(false)
-    
-    toast({
-      title: "Evento criado",
-      description: "O novo evento foi criado com sucesso."
-    })
   }
 
   const getStatusColor = (status: string) => {
