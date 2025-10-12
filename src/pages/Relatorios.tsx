@@ -40,7 +40,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -51,10 +51,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
+import { useAttendances } from "@/hooks/useAttendances"
+import { useEvents } from "@/hooks/useEvents"
+import { useProfiles } from "@/hooks/useProfiles"
+import { useQuestionnaires } from "@/hooks/useQuestionnaires"
 
 const Relatorios = () => {
   const { toast } = useToast()
+  const { attendances } = useAttendances()
+  const { events } = useEvents()
+  const { profiles } = useProfiles()
+  const { questionnaires } = useQuestionnaires()
   
   // Filters state
   const [filtroTipo, setFiltroTipo] = useState<string>("todos")
@@ -69,92 +77,78 @@ const Relatorios = () => {
   const [exportTipo, setExportTipo] = useState("individual")
   const [exportAvaliacao, setExportAvaliacao] = useState("completo")
   const [isExporting, setIsExporting] = useState(false)
-  const relatoriosDisponiveis = [
-    {
-      id: 1,
-      titulo: "Relatório de Presenças - Janeiro",
-      tipo: "Presença",
-      periodo: "Janeiro 2024",
-      geradoEm: "2024-01-20 10:30",
-      status: "Disponível",
-      tamanho: "2.4 MB",
-      formato: "PDF"
-    },
-    {
-      id: 2,
-      titulo: "Análise de Desempenho por Equipe",
-      tipo: "Performance", 
-      periodo: "Último trimestre",
-      geradoEm: "2024-01-18 15:45",
-      status: "Disponível",
-      tamanho: "1.8 MB",
-      formato: "Excel"
-    },
-    {
-      id: 3,
-      titulo: "Questionários - Estatísticas Gerais",
-      tipo: "Avaliações",
-      periodo: "Janeiro 2024",
-      geradoEm: "2024-01-15 09:20", 
-      status: "Disponível",
-      tamanho: "956 KB",
-      formato: "PDF"
-    },
-    {
-      id: 4,
-      titulo: "Ranking Mensal Completo",
-      tipo: "Ranking",
-      periodo: "Dezembro 2023",
-      geradoEm: "2024-01-02 14:15",
-      status: "Disponível",
-      tamanho: "3.1 MB", 
-      formato: "PDF"
-    }
-  ]
+  // Calculate metrics from real data
+  const metricas = useMemo(() => {
+    const totalPresencas = attendances.length
+    const presencasConfirmadas = attendances.filter(a => a.status === 'Presente').length
+    const taxaPresenca = totalPresencas > 0 ? (presencasConfirmadas / totalPresencas) * 100 : 0
 
-  const metricas = [
-    {
-      titulo: "Taxa de Presença Média",
-      valor: "87.5%",
-      mudanca: "+5.2%",
-      tipo: "positivo",
-      icone: Users,
-      descricao: "Comparado ao mês anterior"
-    },
-    {
-      titulo: "Eventos Realizados",
-      valor: "18",
-      mudanca: "+3",
-      tipo: "positivo", 
-      icone: Calendar,
-      descricao: "Este mês"
-    },
-    {
-      titulo: "Questionários Aplicados",
-      valor: "12",
-      mudanca: "-2",
-      tipo: "negativo",
-      icone: FileText,
-      descricao: "Este mês"
-    },
-    {
-      titulo: "Participação Média",
-      valor: "92.3%",
-      mudanca: "-1.1%",
-      tipo: "negativo",
-      icone: TrendingUp,
-      descricao: "Taxa de conclusão"
-    }
-  ]
+    const eventosRealizados = events.filter(e => {
+      const eventDate = new Date(e.data)
+      const now = new Date()
+      return eventDate < now
+    }).length
 
-  const estatisticasRapidas = {
-    totalParticipantes: 243,
-    eventosAtivos: 3,
-    presencaHoje: 38,
-    avaliacoesPendentes: 5,
-    equipesAtivas: 4,
-    mediaGeralNotas: 8.4
-  }
+    const questionariosAtivos = questionnaires.length
+
+    return [
+      {
+        titulo: "Taxa de Presença Média",
+        valor: `${taxaPresenca.toFixed(1)}%`,
+        mudanca: "+0%",
+        tipo: "positivo",
+        icone: Users,
+        descricao: "Baseado nos registros"
+      },
+      {
+        titulo: "Eventos Realizados",
+        valor: eventosRealizados.toString(),
+        mudanca: "+0",
+        tipo: "positivo", 
+        icone: Calendar,
+        descricao: "Total de eventos"
+      },
+      {
+        titulo: "Questionários Aplicados",
+        valor: questionariosAtivos.toString(),
+        mudanca: "+0",
+        tipo: "positivo",
+        icone: FileText,
+        descricao: "Total de questionários"
+      },
+      {
+        titulo: "Participantes Cadastrados",
+        valor: profiles.length.toString(),
+        mudanca: "+0",
+        tipo: "positivo",
+        icone: TrendingUp,
+        descricao: "Total de usuários"
+      }
+    ]
+  }, [attendances, events, questionnaires, profiles])
+
+  const estatisticasRapidas = useMemo(() => {
+    const hoje = new Date().toISOString().split('T')[0]
+    const presencaHoje = attendances.filter(a => {
+      const attendanceDate = new Date(a.created_at).toISOString().split('T')[0]
+      return attendanceDate === hoje
+    }).length
+
+    const eventosAtivos = events.filter(e => {
+      const eventDate = new Date(e.data)
+      const now = new Date()
+      return eventDate >= now
+    }).length
+
+    return {
+      totalParticipantes: profiles.length,
+      eventosAtivos,
+      presencaHoje,
+      avaliacoesPendentes: questionnaires.length,
+      equipesAtivas: 0, // TODO: Count from teams table
+      mediaGeralNotas: 0 // TODO: Calculate from responses
+    }
+  }, [attendances, events, profiles, questionnaires])
 
   const getTipoColor = (tipo: string) => {
     switch (tipo) {
@@ -187,19 +181,7 @@ const Relatorios = () => {
     { id: "apresentacao1", nome: "Apresentação - 25/01" }
   ]
 
-  // Filter functions
-  const relatoriosFiltrados = relatoriosDisponiveis.filter((relatorio) => {
-    if (filtroTipo !== "todos") {
-      const tipoMap: Record<string, string> = {
-        presenca: "Presença",
-        performance: "Performance", 
-        avaliacoes: "Avaliações",
-        ranking: "Ranking"
-      }
-      if (relatorio.tipo !== tipoMap[filtroTipo]) return false
-    }
-    return true
-  })
+  const relatoriosDisponiveis: any[] = []
 
   // Export functions
   const handleExportPresencas = async () => {

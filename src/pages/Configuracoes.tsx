@@ -50,57 +50,48 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { useAuth } from "@/contexts/AuthContext"
+import { useProfiles } from "@/hooks/useProfiles"
+import { useState, useEffect } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 const Configuracoes = () => {
-  const usuariosComAcesso = [
-    {
-      id: 1,
-      nome: "João Silva",
-      email: "joao.silva@email.com",
-      papel: "Administrador",
-      local: "São Paulo - Central",
-      ultimoAcesso: "Hoje, 14:30",
-      status: "Ativo"
-    },
-    {
-      id: 2,
-      nome: "Maria Santos", 
-      email: "maria.santos@email.com",
-      papel: "Encarregado Local",
-      local: "São Paulo - Central",
-      ultimoAcesso: "Ontem, 19:45",
-      status: "Ativo"
-    },
-    {
-      id: 3,
-      nome: "Pedro Costa",
-      email: "pedro.costa@email.com",
-      papel: "Instrutor",
-      local: "Rio de Janeiro - Norte",
-      ultimoAcesso: "2 dias atrás",
-      status: "Ativo"
+  const { user } = useAuth()
+  const { profiles, updateProfile } = useProfiles()
+  const { toast } = useToast()
+
+  const [profileData, setProfileData] = useState({
+    nome: "",
+    telefone: "",
+    endereco: "",
+    localidade: "",
+    regiao: "",
+    instrumento: ""
+  })
+
+  useEffect(() => {
+    if (user) {
+      const currentProfile = profiles.find(p => p.id === user.id)
+      if (currentProfile) {
+        setProfileData({
+          nome: currentProfile.nome || "",
+          telefone: currentProfile.telefone || "",
+          endereco: currentProfile.endereco || "",
+          localidade: currentProfile.localidade || "",
+          regiao: currentProfile.regiao || "",
+          instrumento: currentProfile.instrumento || ""
+        })
+      }
     }
-  ]
+  }, [user, profiles])
 
-  const configuracoesSistema = {
-    nomeOrganizacao: "Igreja Central",
-    emailPrincipal: "admin@igreja.com.br",
-    telefone: "+55 11 99999-9999",
-    endereco: "Rua da Igreja, 123 - São Paulo/SP",
-    fusoHorario: "America/Sao_Paulo",
-    idioma: "pt-BR",
-    moeda: "BRL"
-  }
-
-  const configuracoesFuncionalidades = {
-    qrCodeExpiracao: 60,
-    presencaAutomatica: true,
-    notificacoesEmail: true,
-    notificacoesPush: true,
-    avaliacaoMinima: 5.0,
-    presencaMinimaRanking: 80,
-    backupAutomatico: true,
-    logAuditoria: true
+  const handleSaveProfile = () => {
+    if (!user) return
+    
+    updateProfile({
+      id: user.id,
+      ...profileData
+    })
   }
 
   return (
@@ -156,32 +147,35 @@ const Configuracoes = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="nome-org">Nome da Organização</Label>
+                          <Label htmlFor="nome">Nome Completo</Label>
                           <Input 
-                            id="nome-org" 
-                            defaultValue={configuracoesSistema.nomeOrganizacao}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="email">E-mail Principal</Label>
-                          <Input 
-                            id="email" 
-                            type="email" 
-                            defaultValue={configuracoesSistema.emailPrincipal}
+                            id="nome" 
+                            value={profileData.nome}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, nome: e.target.value }))}
                           />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="telefone">Telefone</Label>
                           <Input 
                             id="telefone" 
-                            defaultValue={configuracoesSistema.telefone}
+                            value={profileData.telefone}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, telefone: e.target.value }))}
                           />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="endereco">Endereço</Label>
                           <Input 
                             id="endereco" 
-                            defaultValue={configuracoesSistema.endereco}
+                            value={profileData.endereco}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, endereco: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="localidade">Localidade</Label>
+                          <Input 
+                            id="localidade" 
+                            value={profileData.localidade}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, localidade: e.target.value }))}
                           />
                         </div>
                       </CardContent>
@@ -196,44 +190,25 @@ const Configuracoes = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Label>Fuso Horário</Label>
-                          <Select defaultValue={configuracoesSistema.fusoHorario}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="America/Sao_Paulo">Brasília (UTC-3)</SelectItem>
-                              <SelectItem value="America/Manaus">Manaus (UTC-4)</SelectItem>
-                              <SelectItem value="America/Rio_Branco">Rio Branco (UTC-5)</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Label htmlFor="regiao">Região</Label>
+                          <Input 
+                            id="regiao" 
+                            value={profileData.regiao}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, regiao: e.target.value }))}
+                          />
                         </div>
                         <div className="space-y-2">
-                          <Label>Idioma</Label>
-                          <Select defaultValue={configuracoesSistema.idioma}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
-                              <SelectItem value="en-US">English (US)</SelectItem>
-                              <SelectItem value="es-ES">Español</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Label htmlFor="instrumento">Instrumento</Label>
+                          <Input 
+                            id="instrumento" 
+                            value={profileData.instrumento}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, instrumento: e.target.value }))}
+                          />
                         </div>
-                        <div className="space-y-2">
-                          <Label>Moeda</Label>
-                          <Select defaultValue={configuracoesSistema.moeda}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="BRL">Real (R$)</SelectItem>
-                              <SelectItem value="USD">Dólar ($)</SelectItem>
-                              <SelectItem value="EUR">Euro (€)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        <Button onClick={handleSaveProfile} className="w-full gap-2">
+                          <Save className="w-4 h-4" />
+                          Salvar Perfil
+                        </Button>
                       </CardContent>
                     </Card>
                   </div>
@@ -452,39 +427,12 @@ const Configuracoes = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {usuariosComAcesso.map((usuario) => (
-                            <TableRow key={usuario.id}>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium text-foreground">{usuario.nome}</p>
-                                  <p className="text-sm text-muted-foreground">{usuario.email}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant={
-                                  usuario.papel === 'Administrador' ? 'destructive' : 'default'
-                                }>
-                                  {usuario.papel}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {usuario.local}
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {usuario.ultimoAcesso}
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="default">
-                                  {usuario.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Button variant="outline" size="sm">
-                                  Editar
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                              <p>Nenhum usuário com acesso especial configurado</p>
+                              <p className="text-sm mt-2">Os usuários com acesso especial aparecerão aqui</p>
+                            </TableCell>
+                          </TableRow>
                         </TableBody>
                       </Table>
                       <div className="mt-4">

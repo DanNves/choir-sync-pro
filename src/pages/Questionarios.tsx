@@ -46,75 +46,13 @@ import { EditQuestionarioModal } from "@/components/questionarios/EditQuestionar
 import { QuestionarioResponseModal } from "@/components/questionarios/QuestionarioResponseModal"
 import { ViewResponsesModal } from "@/components/questionarios/ViewResponsesModal"
 import { useToast } from "@/hooks/use-toast"
+import { useQuestionnaires } from "@/hooks/useQuestionnaires"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 const Questionarios = () => {
-  const [questionarios, setQuestionarios] = useState<Array<{
-    id: number;
-    titulo: string;
-    evento: string;
-    dataEvento: string;
-    tipo: string;
-    questoes: number;
-    participantes: number;
-    respostas: number;
-    status: string;
-    prazo: string;
-    mediaNotas: number;
-    fullData?: any;
-  }>>([
-    {
-      id: 1,
-      titulo: "Avaliação Técnica - Violão Básico",
-      evento: "Ensaio Coral Juvenil",
-      dataEvento: "2024-01-20",
-      tipo: "Técnico",
-      questoes: 15,
-      participantes: 12,
-      respostas: 8,
-      status: "Ativo",
-      prazo: "2024-01-21 23:59",
-      mediaNotas: 7.8
-    },
-    {
-      id: 2,
-      titulo: "Conhecimento Musical - Teoria Básica", 
-      evento: "Reunião de Instrumentistas",
-      dataEvento: "2024-01-19",
-      tipo: "Teórico",
-      questoes: 20,
-      participantes: 23,
-      respostas: 21,
-      status: "Finalizado",
-      prazo: "2024-01-20 23:59",
-      mediaNotas: 8.4
-    },
-    {
-      id: 3,
-      titulo: "Feedback do Ensaio",
-      evento: "Ensaio Coral Adulto", 
-      dataEvento: "2024-01-18",
-      tipo: "Feedback",
-      questoes: 8,
-      participantes: 67,
-      respostas: 58,
-      status: "Finalizado",
-      prazo: "2024-01-19 12:00",
-      mediaNotas: 9.1
-    },
-    {
-      id: 4,
-      titulo: "Autoavaliação - Piano Intermediário",
-      evento: "Avaliação Técnica Mensal",
-      dataEvento: "2024-01-25", 
-      tipo: "Autoavaliação",
-      questoes: 12,
-      participantes: 8,
-      respostas: 0,
-      status: "Agendado",
-      prazo: "2024-01-26 18:00",
-      mediaNotas: 0
-    }
-  ])
+  const { toast } = useToast()
+  const { questionnaires, isLoading, createQuestionnaire, updateQuestionnaire, deleteQuestionnaire } = useQuestionnaires()
 
   const [editingQuestionario, setEditingQuestionario] = useState<any>(null)
   const [respondingQuestionario, setRespondingQuestionario] = useState<any>(null)
@@ -122,34 +60,6 @@ const Questionarios = () => {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [responseModalOpen, setResponseModalOpen] = useState(false)
   const [viewResponsesModalOpen, setViewResponsesModalOpen] = useState(false)
-  const { toast } = useToast()
-
-  const respostasRecentes = [
-    {
-      id: 1,
-      usuario: "João Silva",
-      questionario: "Avaliação Técnica - Violão Básico",
-      nota: 8.5,
-      tempo: "12 min",
-      dataResposta: "Hoje, 15:30"
-    },
-    {
-      id: 2,
-      usuario: "Maria Santos",
-      questionario: "Avaliação Técnica - Violão Básico", 
-      nota: 7.2,
-      tempo: "15 min",
-      dataResposta: "Hoje, 14:45"
-    },
-    {
-      id: 3,
-      usuario: "Pedro Costa",
-      questionario: "Conhecimento Musical - Teoria Básica",
-      nota: 9.0,
-      tempo: "18 min", 
-      dataResposta: "Ontem, 21:15"
-    }
-  ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -178,56 +88,57 @@ const Questionarios = () => {
   }
 
   const handleCreateQuestionario = (novoQuestionario: any) => {
-    setQuestionarios(prev => [...prev, {
-      id: novoQuestionario.id,
-      titulo: novoQuestionario.title,
-      evento: "Evento Selecionado", // This should come from the event selection
-      dataEvento: new Date().toISOString().split('T')[0],
-      tipo: novoQuestionario.questions.some((q: any) => q.type === 'scale') ? "Técnico" : 
-            novoQuestionario.questions.some((q: any) => q.type === 'boolean') ? "Teórico" : "Feedback",
-      questoes: novoQuestionario.questions.length,
-      participantes: 0,
-      respostas: 0,
-      status: "Agendado",
-      prazo: new Date(novoQuestionario.endDate).toLocaleString(),
-      mediaNotas: 0,
-      fullData: novoQuestionario
-    }])
-  }
-
-  const handleUpdateQuestionario = (updatedQuestionario: any) => {
-    setQuestionarios(prev => prev.map(q => 
-      q.id === updatedQuestionario.id 
-        ? {
-            ...q,
-            titulo: updatedQuestionario.title,
-            questoes: updatedQuestionario.questions.length,
-            prazo: new Date(updatedQuestionario.endDate).toLocaleString(),
-            fullData: updatedQuestionario
-          }
-        : q
-    ))
-  }
-
-  const handleSubmitResponse = (questionarioId: string, responses: Record<string, any>) => {
-    setQuestionarios(prev => prev.map(q => 
-      q.id.toString() === questionarioId 
-        ? { ...q, respostas: q.respostas + 1 }
-        : q
-    ))
-  }
-
-  const handleDeleteQuestionario = (id: number) => {
-    setQuestionarios(prev => prev.filter(q => q.id !== id))
-    toast({
-      title: "Questionário excluído",
-      description: "O questionário foi removido com sucesso"
+    createQuestionnaire({
+      questionnaire: {
+        titulo: novoQuestionario.title,
+        descricao: novoQuestionario.description,
+        event_id: novoQuestionario.eventId,
+        tipo: novoQuestionario.type,
+        data_inicio: novoQuestionario.startDate,
+        data_fim: novoQuestionario.endDate
+      },
+      questions: novoQuestionario.questions.map((q: any, index: number) => ({
+        texto: q.text,
+        tipo: q.type,
+        ordem: index + 1,
+        peso: q.weight,
+        obrigatorio: q.required,
+        opcoes: q.options || null
+      }))
     })
   }
 
-  const canRespond = (questionario: any) => {
-    return questionario.status === "Ativo"
+  const handleUpdateQuestionario = (updatedQuestionario: any) => {
+    updateQuestionnaire({
+      id: updatedQuestionario.id,
+      titulo: updatedQuestionario.title,
+      descricao: updatedQuestionario.description,
+      data_fim: updatedQuestionario.endDate
+    })
   }
+
+  const handleSubmitResponse = (questionarioId: string, responses: Record<string, any>) => {
+    toast({
+      title: "Resposta enviada",
+      description: "Sua resposta foi registrada com sucesso."
+    })
+  }
+
+  const handleDeleteQuestionario = (id: string) => {
+    deleteQuestionnaire(id)
+  }
+
+  const canRespond = (questionario: any) => {
+    const now = new Date()
+    const dataInicio = new Date(questionario.data_inicio)
+    const dataFim = new Date(questionario.data_fim)
+    return now >= dataInicio && now <= dataFim
+  }
+
+  const totalQuestionarios = questionnaires.length
+  const ativosCount = questionnaires.filter(q => canRespond(q)).length
+  const totalRespostas = 0 // TODO: Count from responses table
+  const mediaGeral = 0 // TODO: Calculate from responses
 
   return (
     <ProtectedRoute resource="questionarios">
@@ -268,7 +179,7 @@ const Questionarios = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Total</p>
-                        <p className="text-2xl font-bold text-foreground">28</p>
+                        <p className="text-2xl font-bold text-foreground">{totalQuestionarios}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -282,7 +193,7 @@ const Questionarios = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Ativos</p>
-                        <p className="text-2xl font-bold text-foreground">3</p>
+                        <p className="text-2xl font-bold text-foreground">{ativosCount}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -296,7 +207,7 @@ const Questionarios = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Participações</p>
-                        <p className="text-2xl font-bold text-foreground">87</p>
+                        <p className="text-2xl font-bold text-foreground">{totalRespostas}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -310,7 +221,7 @@ const Questionarios = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Média Geral</p>
-                        <p className="text-2xl font-bold text-foreground">8.4</p>
+                        <p className="text-2xl font-bold text-foreground">{mediaGeral.toFixed(1)}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -325,20 +236,33 @@ const Questionarios = () => {
                 </TabsList>
 
                 <TabsContent value="questionarios" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {questionarios.map((questionario) => (
-                      <Card key={questionario.id} className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="space-y-2">
-                              <CardTitle className="text-lg">{questionario.titulo}</CardTitle>
-                              <div className="flex items-center gap-2">
-                                <Badge variant={getTipoColor(questionario.tipo)}>
-                                  {questionario.tipo}
-                                </Badge>
-                                <Badge variant={getStatusColor(questionario.status)}>
-                                  {questionario.status}
-                                </Badge>
+                  {isLoading ? (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">Carregando questionários...</p>
+                    </div>
+                  ) : questionnaires.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">Nenhum questionário encontrado</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {questionnaires.map((questionario: any) => {
+                        const questoesCount = questionario.questionnaire_questions?.length || 0
+                        const eventoNome = questionario.events?.nome || "Sem evento"
+                        
+                        return (
+                        <Card key={questionario.id} className="bg-gradient-to-br from-card to-card/50 border-0 shadow-card">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2">
+                                <CardTitle className="text-lg">{questionario.titulo}</CardTitle>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant={getTipoColor(questionario.tipo)}>
+                                    {questionario.tipo}
+                                  </Badge>
+                                  <Badge variant={canRespond(questionario) ? "default" : "secondary"}>
+                                    {canRespond(questionario) ? "Ativo" : "Encerrado"}
+                                  </Badge>
                               </div>
                             </div>
                             <DropdownMenu>
@@ -419,61 +343,40 @@ const Questionarios = () => {
                             </DropdownMenu>
                           </div>
                         </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div>
-                              <p className="text-sm text-muted-foreground mb-1">Evento vinculado</p>
-                              <p className="font-medium text-foreground">{questionario.evento}</p>
-                              <p className="text-xs text-muted-foreground">{questionario.dataEvento}</p>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 text-sm">
+                          <CardContent>
+                            <div className="space-y-4">
                               <div>
-                                <p className="text-muted-foreground">Questões</p>
-                                <p className="font-medium text-foreground">{questionario.questoes}</p>
+                                <p className="text-sm text-muted-foreground mb-1">Evento vinculado</p>
+                                <p className="font-medium text-foreground">{eventoNome}</p>
+                                {questionario.events?.data && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {format(new Date(questionario.events.data), "dd/MM/yyyy", { locale: ptBR })}
+                                  </p>
+                                )}
                               </div>
-                              <div>
-                                <p className="text-muted-foreground">Participantes</p>
-                                <p className="font-medium text-foreground">{questionario.participantes}</p>
+
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <p className="text-muted-foreground">Questões</p>
+                                  <p className="font-bold text-foreground">{questoesCount}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Prazo</p>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3 text-warning" />
+                                    <p className="text-xs text-foreground">
+                                      {format(new Date(questionario.data_fim), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                                    </p>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-
-                            <div>
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-muted-foreground">Progresso</span>
-                                <span className="text-sm font-medium text-foreground">
-                                  {questionario.respostas}/{questionario.participantes}
-                                </span>
-                              </div>
-                              <Progress 
-                                value={questionario.participantes > 0 
-                                  ? (questionario.respostas / questionario.participantes) * 100 
-                                  : 0
-                                } 
-                                className="h-2"
-                              />
-                            </div>
-
-                            {questionario.mediaNotas > 0 && (
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground">Média das notas:</span>
-                                <span className={`text-sm font-medium ${getNotaColor(questionario.mediaNotas)}`}>
-                                  {questionario.mediaNotas.toFixed(1)}
-                                </span>
-                              </div>
-                            )}
-
-                            <div className="pt-2 border-t border-border/50">
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Clock className="w-3 h-3" />
-                                Prazo: {questionario.prazo}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="respostas" className="space-y-6">
@@ -493,27 +396,11 @@ const Questionarios = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {respostasRecentes.map((resposta) => (
-                            <TableRow key={resposta.id}>
-                              <TableCell className="font-medium text-foreground">
-                                {resposta.usuario}
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {resposta.questionario}
-                              </TableCell>
-                              <TableCell>
-                                <span className={`font-medium ${getNotaColor(resposta.nota)}`}>
-                                  {resposta.nota}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {resposta.tempo}
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {resposta.dataResposta}
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                              Nenhuma resposta registrada ainda
+                            </TableCell>
+                          </TableRow>
                         </TableBody>
                       </Table>
                     </CardContent>
