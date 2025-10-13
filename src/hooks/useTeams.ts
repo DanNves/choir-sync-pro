@@ -12,7 +12,11 @@ export function useTeams() {
       const { data, error } = await supabase
         .from('teams')
         .select(`
-          *,
+          id,
+          nome,
+          tipo,
+          descricao,
+          instrutor_id,
           instrutor:profiles!teams_instrutor_id_fkey(id, nome),
           team_members(
             user_id,
@@ -23,7 +27,8 @@ export function useTeams() {
       
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 30000 // Cache por 30 segundos
   });
 
   const createTeam = useMutation({

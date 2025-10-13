@@ -34,89 +34,6 @@ import { EditTeamModal } from "@/components/team/EditTeamModal"
 import { AddMemberModal } from "@/components/team/AddMemberModal"
 import { TeamSettingsModal } from "@/components/team/TeamSettingsModal"
 
-// Mock users data - in a real app this would come from an API
-const mockUsers = [
-  {
-    id: 1,
-    nome: "João Silva",
-    email: "joao.silva@email.com",
-    papel: "Músico",
-    local: "Centro - São Paulo - SP - Brasil",
-    status: "Ativo",
-    instrumento: "Violão",
-    ultimoAcesso: "Hoje, 14:30"
-  },
-  {
-    id: 2,
-    nome: "Maria Santos",
-    email: "maria.santos@email.com", 
-    papel: "Organista",
-    local: "Centro - Salvador - BA - Brasil",
-    status: "Ativo",
-    instrumento: "Órgão",
-    ultimoAcesso: "Ontem, 19:45"
-  },
-  {
-    id: 3,
-    nome: "Pedro Costa",
-    email: "pedro.costa@email.com",
-    papel: "Ancião",
-    local: "Norte - Rio de Janeiro - RJ - Brasil",
-    status: "Ativo",  // Changed to Active for demo
-    instrumento: "Vocal",  // Changed for demo
-    ultimoAcesso: "2 dias atrás"
-  },
-  {
-    id: 4,
-    nome: "Ana Oliveira",
-    email: "ana.oliveira@email.com",
-    papel: "Instrutor",
-    local: "Centro - Belo Horizonte - MG - Brasil", 
-    status: "Ativo",
-    instrumento: "Piano",
-    ultimoAcesso: "Hoje, 16:20"
-  },
-  {
-    id: 5,
-    nome: "Carlos Lima",
-    email: "carlos.lima@email.com",
-    papel: "Músico",
-    local: "Sul - Porto Alegre - RS - Brasil",
-    status: "Ativo",
-    instrumento: "Violino",
-    ultimoAcesso: "Hoje, 18:00"
-  },
-  {
-    id: 6,
-    nome: "Fernanda Rocha",
-    email: "fernanda.rocha@email.com",
-    papel: "Encarregado",
-    local: "Centro - Brasília - DF - Brasil",
-    status: "Ativo",
-    instrumento: "Flauta",
-    ultimoAcesso: "Ontem, 15:30"
-  },
-  {
-    id: 7,
-    nome: "Roberto Mendes",
-    email: "roberto.mendes@email.com",
-    papel: "Músico",
-    local: "Norte - Fortaleza - CE - Brasil",
-    status: "Ativo",
-    instrumento: "Bateria",
-    ultimoAcesso: "Hoje, 12:45"
-  },
-  {
-    id: 8,
-    nome: "Juliana Alves",
-    email: "juliana.alves@email.com",
-    papel: "Músico",
-    local: "Centro - Recife - PE - Brasil",
-    status: "Ativo",
-    instrumento: "Vocal",
-    ultimoAcesso: "Hoje, 20:10"
-  }
-]
 
 interface TeamMember {
   userId: number
@@ -132,8 +49,6 @@ interface Team {
   members: TeamMember[]
   description?: string
   status: string
-  ultimoEnsaio: string
-  proximoEvento: string
 }
 
 const Equipes = () => {
@@ -168,9 +83,7 @@ const Equipes = () => {
       instrumento: tm.profiles?.instrumento || 'Não possui'
     })) || [],
     description: team.descricao,
-    status: "Ativa",
-    ultimoEnsaio: "Hoje",
-    proximoEvento: "A definir"
+    status: "Ativa"
   }))
 
   const handleTeamCreate = (teamData: any) => {
@@ -221,7 +134,6 @@ const Equipes = () => {
   // Statistics calculations
   const totalMembers = equipes.reduce((acc, team) => acc + team.members.length, 0)
   const totalLeaders = equipes.length
-  const averagePerformance = 91.2 // Mock value
 
   return (
     <ProtectedRoute resource="equipes">
@@ -287,11 +199,13 @@ const Equipes = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center">
-                        <TrendingUp className="w-6 h-6 text-warning" />
+                        <Music className="w-6 h-6 text-warning" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Desempenho Médio</p>
-                        <p className="text-2xl font-bold text-foreground">{averagePerformance}%</p>
+                        <p className="text-sm text-muted-foreground">Instrumentos Únicos</p>
+                        <p className="text-2xl font-bold text-foreground">
+                          {new Set(equipes.flatMap(e => e.members.map(m => m.instrumento))).size}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -424,19 +338,12 @@ const Equipes = () => {
                             </div>
                           </div>
 
-                          {/* Events */}
-                          <div className="pt-2 border-t">
-                            <div className="grid grid-cols-2 gap-4 text-xs">
-                              <div>
-                                <p className="text-muted-foreground">Último Ensaio</p>
-                                <p className="font-medium">{equipe.ultimoEnsaio}</p>
-                              </div>
-                              <div>
-                                <p className="text-muted-foreground">Próximo Evento</p>
-                                <p className="font-medium">{equipe.proximoEvento}</p>
-                              </div>
+                          {/* Description */}
+                          {equipe.description && (
+                            <div className="pt-2 border-t">
+                              <p className="text-sm text-muted-foreground">{equipe.description}</p>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

@@ -11,15 +11,13 @@ export function useProfiles() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles(role)
-        `)
+        .select('*')
         .order('nome');
       
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 30000 // Cache por 30 segundos
   });
 
   const updateProfile = useMutation({

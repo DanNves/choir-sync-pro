@@ -549,7 +549,7 @@ const Usuarios = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Total</p>
-                        <p className="text-2xl font-bold text-foreground">243</p>
+                        <p className="text-2xl font-bold text-foreground">{usuarios.length}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -563,7 +563,7 @@ const Usuarios = () => {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Ativos</p>
-                        <p className="text-2xl font-bold text-foreground">198</p>
+                        <p className="text-2xl font-bold text-foreground">{usuarios.filter(u => u.status === 'Ativo').length}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -576,8 +576,8 @@ const Usuarios = () => {
                         <Users className="w-6 h-6 text-warning" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Pendentes</p>
-                        <p className="text-2xl font-bold text-foreground">32</p>
+                        <p className="text-sm text-muted-foreground">Com Instrumento</p>
+                        <p className="text-2xl font-bold text-foreground">{usuarios.filter(u => u.instrumento && u.instrumento !== 'Não possui').length}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -590,8 +590,8 @@ const Usuarios = () => {
                         <Users className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Inativos</p>
-                        <p className="text-2xl font-bold text-foreground">13</p>
+                        <p className="text-sm text-muted-foreground">Instrutores</p>
+                        <p className="text-2xl font-bold text-foreground">{usuarios.filter(u => u.papel === 'instrutor').length}</p>
                       </div>
                     </div>
                   </CardContent>

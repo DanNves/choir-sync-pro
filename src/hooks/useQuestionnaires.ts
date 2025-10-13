@@ -11,16 +11,13 @@ export function useQuestionnaires() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('questionnaires')
-        .select(`
-          *,
-          events(id, nome),
-          questionnaire_questions(*)
-        `)
+        .select('id, titulo, descricao, tipo, data_inicio, data_fim, event_id, created_at')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 30000 // Cache por 30 segundos
   });
 
   const createQuestionnaire = useMutation({

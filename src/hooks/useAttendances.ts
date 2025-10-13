@@ -11,16 +11,13 @@ export function useAttendances() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('attendances')
-        .select(`
-          *,
-          profiles(id, nome),
-          events(id, nome)
-        `)
+        .select('id, event_id, user_id, status, horario_entrada, horario_saida, observacoes, created_at')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 30000 // Cache por 30 segundos
   });
 
   const createAttendance = useMutation({

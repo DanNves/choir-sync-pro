@@ -11,12 +11,13 @@ export function useEvents() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
-        .select('*')
+        .select('id, nome, tipo, data, horario, duracao, local, status, participantes_esperados, responsavel')
         .order('data', { ascending: false });
       
       if (error) throw error;
       return data;
-    }
+    },
+    staleTime: 30000 // Cache por 30 segundos
   });
 
   const createEvent = useMutation({
