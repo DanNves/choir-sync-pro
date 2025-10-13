@@ -122,7 +122,10 @@ const rolePermissions: Record<UserRole, string[]> = {
     'manage_users',
     'manage_teams',
     'manage_events',
+    'manage_local_events',
     'manage_questionnaires',
+    'create_questionnaires',
+    'manual_checkin',
     'audit_logs',
     'system_config'
   ]
