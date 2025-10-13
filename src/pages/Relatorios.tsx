@@ -593,49 +593,59 @@ const Relatorios = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {relatoriosFiltrados.map((relatorio) => (
-                          <div key={relatorio.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <FileText className="w-6 h-6 text-primary" />
+                        {relatoriosDisponiveis.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p>Nenhum relatório gerado ainda.</p>
+                            <p className="text-sm mt-1">Use as opções de exportação acima para gerar relatórios.</p>
+                          </div>
+                        ) : (
+                          relatoriosDisponiveis.map((relatorio) => (
+                            <div key={relatorio.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                  <FileText className="w-6 h-6 text-primary" />
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-foreground">{relatorio.titulo}</h4>
+                                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                    <span>{relatorio.periodo}</span>
+                                    <span>•</span>
+                                    <span>{relatorio.geradoEm}</span>
+                                    <span>•</span>
+                                    <span>{relatorio.tamanho}</span>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="font-medium text-foreground">{relatorio.titulo}</h4>
-                                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                  <span>{relatorio.periodo}</span>
-                                  <span>•</span>
-                                  <span>{relatorio.geradoEm}</span>
-                                  <span>•</span>
-                                  <span>{relatorio.tamanho}</span>
+                              <div className="flex items-center gap-3">
+                                <Badge variant={getTipoColor(relatorio.tipo)}>
+                                  {relatorio.tipo}
+                                </Badge>
+                                <Badge variant="outline">
+                                  {relatorio.formato}
+                                </Badge>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleViewReport(relatorio)}
+                                    className="h-8 w-8"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleDownloadReport(relatorio)}
+                                    className="h-8 w-8"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </Button>
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <Badge variant={getTipoColor(relatorio.tipo)}>
-                                {relatorio.tipo}
-                              </Badge>
-                              <Badge variant="outline">
-                                {relatorio.formato}
-                              </Badge>
-                              <div className="flex items-center gap-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  onClick={() => handleViewReport(relatorio)}
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  onClick={() => handleDownloadReport(relatorio)}
-                                >
-                                  <Download className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </CardContent>
                   </Card>
