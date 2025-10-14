@@ -1,8 +1,7 @@
-import { Bell, Search, Settings, User } from "lucide-react"
+import { Search, Settings, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
+import { NotificationsPopover } from "@/components/NotificationsPopover"
+import { useNavigate } from "react-router-dom"
 
 export function Header() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   
   const getRoleDisplayName = (role: string) => {
     const roleNames: Record<string, string> = {
@@ -54,12 +56,7 @@ export function Header() {
 
       <div className="flex items-center gap-4">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5 text-foreground" />
-          <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-primary text-primary-foreground text-xs">
-            3
-          </Badge>
-        </Button>
+        <NotificationsPopover />
 
         {/* User Menu */}
         <DropdownMenu>
@@ -80,14 +77,16 @@ export function Header() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/configuracoes')}>
               <User className="w-4 h-4 mr-2" />
               Perfil
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="w-4 h-4 mr-2" />
-              Configurações
-            </DropdownMenuItem>
+            {user?.papel === 'administrador' && (
+              <DropdownMenuItem onClick={() => navigate('/configuracoes')}>
+                <Settings className="w-4 h-4 mr-2" />
+                Configurações
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive" onClick={logout}>
               Sair
