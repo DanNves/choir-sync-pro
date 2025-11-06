@@ -73,11 +73,27 @@ const Usuarios = () => {
   })
   const [errors, setErrors] = useState<{[key: string]: string}>({})
 
+  // Mapeamento de papéis para português
+  const roleLabelMap: Record<string, string> = {
+    'candidato': 'Candidato',
+    'musico': 'Músico',
+    'instrutor': 'Instrutor',
+    'encarregado_local': 'Encarregado Local',
+    'encarregado_regional': 'Encarregado Regional',
+    'examinadora': 'Examinadora',
+    'cooperador_jovens': 'Cooperador de Jovens',
+    'cooperador_oficio': 'Cooperador de Ofício',
+    'anciao': 'Ancião',
+    'diacono': 'Diácono',
+    'administrador': 'Administrador'
+  };
+
   const usuarios = profiles.map((profile: any) => ({
     id: profile.id,
     nome: profile.nome,
-    email: profile.id,
+    email: profile.email || 'Email não disponível',
     papel: profile.user_roles?.[0]?.role || 'candidato',
+    papelExibicao: roleLabelMap[profile.user_roles?.[0]?.role || 'candidato'],
     local: profile.localidade || 'Não informado',
     status: "Ativo",
     instrumento: profile.instrumento || 'Não possui',
@@ -146,7 +162,28 @@ const Usuarios = () => {
           })
           .eq('id', authData.user.id)
         
-        if (profileError) throw profileError
+        if (profileError) throw profileError;
+
+        // Update user role se não for candidato (que já é o padrão)
+        if (novoUsuario.papel && novoUsuario.papel !== 'candidato') {
+          // Remover papel padrão
+          const { error: deleteRoleError } = await supabase
+            .from('user_roles')
+            .delete()
+            .eq('user_id', authData.user.id);
+
+          if (deleteRoleError) throw deleteRoleError;
+
+          // Inserir novo papel
+          const { error: insertRoleError } = await supabase
+            .from('user_roles')
+            .insert([{
+              user_id: authData.user.id,
+              role: novoUsuario.papel as any
+            }]);
+
+          if (insertRoleError) throw insertRoleError;
+        }
       }
 
       toast({
@@ -182,7 +219,7 @@ const Usuarios = () => {
     setErrors({})
   }
 
-  const handleSubmitEditUsuario = (e: React.FormEvent) => {
+  const handleSubmitEditUsuario = async (e: React.FormEvent) => {
     e.preventDefault()
     
     const formErrors = validateForm(usuarioEditando, true)
@@ -195,16 +232,56 @@ const Usuarios = () => {
       ? usuarioEditando.instrumentoOutro 
       : usuarioEditando.instrumento
 
-    updateProfile({
-      id: usuarioEditando.id,
-      nome: usuarioEditando.nome,
-      instrumento: instrumentoFinal,
-      localidade: usuarioEditando.local
-    })
-    
-    setEditDialogOpen(false)
-    setUsuarioEditando(null)
-    setErrors({})
+    try {
+      // Atualizar perfil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          nome: usuarioEditando.nome,
+          instrumento: instrumentoFinal,
+          localidade: usuarioEditando.local
+        })
+        .eq('id', usuarioEditando.id);
+
+      if (profileError) throw profileError;
+
+      // Atualizar papel (role) se foi alterado
+      // Primeiro, remover papel antigo
+      const { error: deleteRoleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', usuarioEditando.id);
+
+      if (deleteRoleError) throw deleteRoleError;
+
+      // Inserir novo papel
+      const { error: insertRoleError } = await supabase
+        .from('user_roles')
+        .insert([{
+          user_id: usuarioEditando.id,
+          role: usuarioEditando.papel as any
+        }]);
+
+      if (insertRoleError) throw insertRoleError;
+
+      toast({
+        title: "Usuário atualizado",
+        description: "As informações foram atualizadas com sucesso.",
+      });
+      
+      setEditDialogOpen(false)
+      setUsuarioEditando(null)
+      setErrors({})
+
+      // Recarregar dados
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   }
 
   const handleRemoverUsuario = async (id: string) => {
@@ -288,15 +365,17 @@ const Usuarios = () => {
 
   const getPapelColor = (papel: string) => {
     switch (papel) {
-      case 'Administrador': return 'destructive'
-      case 'Instrutor': return 'default'
-      case 'Organista': return 'secondary'
-      case 'Músico': return 'outline'
-      case 'Ancião': return 'default'
-      case 'Diácono': return 'secondary'
-      case 'Cooperador': return 'outline'
-      case 'Cooperador de Jovens': return 'outline'
-      case 'Candidato': return 'secondary'
+      case 'administrador': return 'destructive'
+      case 'instrutor': return 'default'
+      case 'musico': return 'outline'
+      case 'encarregado_local': return 'default'
+      case 'encarregado_regional': return 'default'
+      case 'examinadora': return 'secondary'
+      case 'cooperador_jovens': return 'outline'
+      case 'cooperador_oficio': return 'outline'
+      case 'anciao': return 'default'
+      case 'diacono': return 'secondary'
+      case 'candidato': return 'secondary'
       default: return 'outline'
     }
   }
@@ -371,15 +450,17 @@ const Usuarios = () => {
                               <SelectValue placeholder="Selecione o cargo" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Administrador">Administrador</SelectItem>
-                              <SelectItem value="Ancião">Ancião</SelectItem>
-                              <SelectItem value="Diácono">Diácono</SelectItem>
-                              <SelectItem value="Cooperador">Cooperador</SelectItem>
-                              <SelectItem value="Cooperador de Jovens">Cooperador de Jovens</SelectItem>
-                              <SelectItem value="Instrutor">Instrutor</SelectItem>
-                              <SelectItem value="Organista">Organista</SelectItem>
-                              <SelectItem value="Músico">Músico</SelectItem>
-                              <SelectItem value="Candidato">Candidato</SelectItem>
+                              <SelectItem value="administrador">Administrador</SelectItem>
+                              <SelectItem value="anciao">Ancião</SelectItem>
+                              <SelectItem value="diacono">Diácono</SelectItem>
+                              <SelectItem value="cooperador_oficio">Cooperador de Ofício</SelectItem>
+                              <SelectItem value="cooperador_jovens">Cooperador de Jovens</SelectItem>
+                              <SelectItem value="encarregado_local">Encarregado Local</SelectItem>
+                              <SelectItem value="encarregado_regional">Encarregado Regional</SelectItem>
+                              <SelectItem value="examinadora">Examinadora</SelectItem>
+                              <SelectItem value="instrutor">Instrutor</SelectItem>
+                              <SelectItem value="musico">Músico</SelectItem>
+                              <SelectItem value="candidato">Candidato</SelectItem>
                             </SelectContent>
                           </Select>
                           {errors.papel && (
@@ -540,15 +621,17 @@ const Usuarios = () => {
                                 <SelectValue placeholder="Selecione o cargo" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Administrador">Administrador</SelectItem>
-                                <SelectItem value="Ancião">Ancião</SelectItem>
-                                <SelectItem value="Diácono">Diácono</SelectItem>
-                                <SelectItem value="Cooperador">Cooperador</SelectItem>
-                                <SelectItem value="Cooperador de Jovens">Cooperador de Jovens</SelectItem>
-                                <SelectItem value="Instrutor">Instrutor</SelectItem>
-                                <SelectItem value="Organista">Organista</SelectItem>
-                                <SelectItem value="Músico">Músico</SelectItem>
-                                <SelectItem value="Candidato">Candidato</SelectItem>
+                                <SelectItem value="administrador">Administrador</SelectItem>
+                                <SelectItem value="anciao">Ancião</SelectItem>
+                                <SelectItem value="diacono">Diácono</SelectItem>
+                                <SelectItem value="cooperador_oficio">Cooperador de Ofício</SelectItem>
+                                <SelectItem value="cooperador_jovens">Cooperador de Jovens</SelectItem>
+                                <SelectItem value="encarregado_local">Encarregado Local</SelectItem>
+                                <SelectItem value="encarregado_regional">Encarregado Regional</SelectItem>
+                                <SelectItem value="examinadora">Examinadora</SelectItem>
+                                <SelectItem value="instrutor">Instrutor</SelectItem>
+                                <SelectItem value="musico">Músico</SelectItem>
+                                <SelectItem value="candidato">Candidato</SelectItem>
                               </SelectContent>
                             </Select>
                             {errors.papel && (
@@ -723,7 +806,7 @@ const Usuarios = () => {
                           </TableCell>
                           <TableCell>
                             <Badge variant={getPapelColor(usuario.papel)}>
-                              {usuario.papel}
+                              {usuario.papelExibicao}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">

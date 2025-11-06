@@ -9,13 +9,39 @@ export function useProfiles() {
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['profiles'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar profiles com roles e emails
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          user_roles (
+            role
+          )
+        `)
         .order('nome');
       
-      if (error) throw error;
-      return data;
+      if (profilesError) throw profilesError;
+
+      // Buscar emails dos usuários
+      const { data: usersData } = await supabase.auth.admin.listUsers();
+      
+      // Criar um mapa de id -> email
+      const emailMap = new Map<string, string>();
+      if (usersData && usersData.users) {
+        usersData.users.forEach((u: any) => {
+          if (u.id && u.email) {
+            emailMap.set(u.id, u.email);
+          }
+        });
+      }
+
+      // Combinar dados
+      const enrichedProfiles = profilesData?.map(profile => ({
+        ...profile,
+        email: emailMap.get(profile.id) || profile.id
+      }));
+      
+      return enrichedProfiles;
     },
     staleTime: 30000 // Cache por 30 segundos
   });
