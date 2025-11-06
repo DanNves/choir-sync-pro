@@ -19,7 +19,8 @@ import {
   Filter,
   MoreHorizontal,
   Edit,
-  Trash2
+  Trash2,
+  Key
 } from "lucide-react"
 import {
   Table,
@@ -58,7 +59,10 @@ const Usuarios = () => {
   const [busca, setBusca] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
   const [usuarioEditando, setUsuarioEditando] = useState<any>(null)
+  const [usuarioResetSenha, setUsuarioResetSenha] = useState<any>(null)
+  const [novaSenha, setNovaSenha] = useState("")
   const [novoUsuario, setNovoUsuario] = useState({
     nome: "",
     email: "",
@@ -215,6 +219,49 @@ const Usuarios = () => {
     } catch (error: any) {
       toast({
         title: "Erro ao remover usuário",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleResetarSenha = (usuario: any) => {
+    setUsuarioResetSenha(usuario)
+    setNovaSenha("")
+    setResetPasswordDialogOpen(true)
+  }
+
+  const handleSubmitResetSenha = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!novaSenha || novaSenha.length < 6) {
+      toast({
+        title: "Senha inválida",
+        description: "A senha deve ter pelo menos 6 caracteres.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const { error } = await supabase.auth.admin.updateUserById(
+        usuarioResetSenha.id,
+        { password: novaSenha }
+      )
+
+      if (error) throw error
+
+      toast({
+        title: "Senha resetada",
+        description: `A senha de ${usuarioResetSenha.nome} foi alterada com sucesso.`,
+      })
+      
+      setResetPasswordDialogOpen(false)
+      setUsuarioResetSenha(null)
+      setNovaSenha("")
+    } catch (error: any) {
+      toast({
+        title: "Erro ao resetar senha",
         description: error.message,
         variant: "destructive",
       })
@@ -407,6 +454,45 @@ const Usuarios = () => {
                     </DialogContent>
                   </Dialog>
                 </ConditionalRender>
+
+                {/* Dialog de Reset de Senha */}
+                <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Resetar Senha</DialogTitle>
+                      <DialogDescription>
+                        Defina uma nova senha para {usuarioResetSenha?.nome}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmitResetSenha}>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="nova-senha">Nova Senha</Label>
+                          <Input
+                            id="nova-senha"
+                            type="password"
+                            value={novaSenha}
+                            onChange={(e) => setNovaSenha(e.target.value)}
+                            placeholder="Digite a nova senha (mínimo 6 caracteres)"
+                            required
+                            minLength={6}
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            A senha deve ter pelo menos 6 caracteres. O usuário poderá alterá-la após fazer login.
+                          </p>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setResetPasswordDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit">
+                          Resetar Senha
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
 
                 {/* Dialog de Edição */}
                 <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -668,6 +754,13 @@ const Usuarios = () => {
                                 >
                                   <Edit className="w-4 h-4" />
                                   Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  className="gap-2"
+                                  onClick={() => handleResetarSenha(usuario)}
+                                >
+                                  <Key className="w-4 h-4" />
+                                  Resetar Senha
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
                                   className="gap-2 text-destructive"
