@@ -802,7 +802,10 @@ const Usuarios = () => {
                       {usuariosFiltrados.map((usuario) => (
                         <TableRow key={usuario.id}>
                           <TableCell>
-                            <p className="font-medium text-foreground">{usuario.nome}</p>
+                             <div>
+                               <p className="font-medium text-foreground">{usuario.nome}</p>
+                               <p className="text-xs text-muted-foreground">{usuario.email}</p>
+                             </div>
                           </TableCell>
                           <TableCell>
                             <Badge variant={getPapelColor(usuario.papel)}>
