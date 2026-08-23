@@ -8,7 +8,8 @@ import {
   Settings, 
   Home,
   CheckCircle,
-  UserCheck
+  UserCheck,
+  Bell
 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import {
@@ -36,6 +37,7 @@ const menuItems = [
 ]
 
 const adminItems = [
+  { title: "Notificações", url: "/notificacoes", icon: Bell, resource: "dashboard" },
   { title: "Configurações", url: "/configuracoes", icon: Settings, resource: "configuracoes" },
 ]
 

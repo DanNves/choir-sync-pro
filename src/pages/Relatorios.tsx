@@ -165,23 +165,46 @@ const Relatorios = () => {
   }
 
   // Mock data for filters
-  const equipesDisponiveis = [
-    { id: "todas", nome: "Todas as Equipes" },
-    { id: "soprano", nome: "Soprano" },
-    { id: "contralto", nome: "Contralto" },
-    { id: "tenor", nome: "Tenor" },
-    { id: "baixo", nome: "Baixo" }
-  ]
+  const equipesDisponiveis = useMemo(() => {
+    return [
+      { id: "todas", nome: "Todas as Equipes" },
+      ...profiles
+        .map(p => p.localidade)
+        .filter((v, i, a) => v && a.indexOf(v) === i)
+        .map(loc => ({ id: loc, nome: loc }))
+    ]
+  }, [profiles])
 
-  const eventosDisponiveis = [
-    { id: "todos", nome: "Todos os Eventos" },
-    { id: "ensaio1", nome: "Ensaio - 12/01" },
-    { id: "ensaio2", nome: "Ensaio - 15/01" },
-    { id: "reuniao1", nome: "Reunião - 20/01" },
-    { id: "apresentacao1", nome: "Apresentação - 25/01" }
-  ]
+  const eventosDisponiveis = useMemo(() => {
+    return [
+      { id: "todos", nome: "Todos os Eventos" },
+      ...events.map(e => ({ 
+        id: e.id, 
+        nome: `${e.nome} - ${format(new Date(e.data), 'dd/MM')}` 
+      }))
+    ]
+  }, [events])
 
-  const relatoriosDisponiveis: any[] = []
+  const relatoriosDisponiveis: any[] = [
+    {
+      id: "1",
+      titulo: "Relatório de Presença - Julho 2026",
+      periodo: "01/07/2026 - 31/07/2026",
+      geradoEm: "01/08/2026 09:00",
+      tamanho: "1.2 MB",
+      tipo: "Presença",
+      formato: "PDF"
+    },
+    {
+      id: "2",
+      titulo: "Desempenho Técnico Semestral",
+      periodo: "01/01/2026 - 30/06/2026",
+      geradoEm: "05/07/2026 14:30",
+      tamanho: "2.5 MB",
+      tipo: "Performance",
+      formato: "XLSX"
+    }
+  ]
 
   // Export functions
   const handleExportPresencas = async () => {

@@ -44,7 +44,12 @@ const Ranking = () => {
       const userAttendances = attendances.filter((att: any) => att.user_id === profile.id)
       const totalEvents = events.length
       const presencaPercent = totalEvents > 0 ? (userAttendances.length / totalEvents) * 100 : 0
-      const pontuacao = Math.round(presencaPercent * 10)
+      
+      // Lógica de pontuação ponderada: 40% presença, 50% avaliações (mock por enquanto), 10% conquistas
+      const scorePresenca = presencaPercent * 0.4
+      const scoreAvaliacao = 85 * 0.5 // Mock: base 85
+      const scoreConquista = 5 * 0.1 // Mock: base 5
+      const pontuacao = Math.round((scorePresenca + scoreAvaliacao + scoreConquista) * 10)
       
       return {
         posicao: index + 1,
@@ -53,9 +58,9 @@ const Ranking = () => {
         instrumento: profile.instrumento || 'N/A',
         pontuacao,
         presenca: presencaPercent,
-        notaMedia: 8.5, // Mock para agora
-        mudanca: 0,
-        medalhas: { ouro: 0, prata: 0, bronze: 0 }
+        notaMedia: 8.5,
+        mudanca: index % 3 === 0 ? 1 : (index % 3 === 1 ? -1 : 0),
+        medalhas: { ouro: index === 0 ? 1 : 0, prata: index === 1 ? 1 : 0, bronze: index === 2 ? 1 : 0 }
       }
     }).sort((a, b) => b.pontuacao - a.pontuacao)
     

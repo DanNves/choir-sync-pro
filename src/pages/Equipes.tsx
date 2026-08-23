@@ -154,7 +154,7 @@ const Equipes = () => {
                     Organize grupos musicais e acompanhe o desempenho das equipes
                   </p>
                 </div>
-                <ConditionalRender permission="manage_users">
+                <ConditionalRender permission="manage_local_events">
                   <Button 
                     className="gap-2" 
                     onClick={() => setCreateModalOpen(true)}

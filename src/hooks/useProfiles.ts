@@ -9,7 +9,7 @@ export function useProfiles() {
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['profiles'],
     queryFn: async () => {
-      // Buscar profiles com roles e emails
+      // Buscar profiles com roles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -22,28 +22,33 @@ export function useProfiles() {
       
       if (profilesError) throw profilesError;
 
-      // Buscar emails dos usuários
-      const { data: usersData } = await supabase.auth.admin.listUsers();
-      
-      // Criar um mapa de id -> email
-      const emailMap = new Map<string, string>();
-      if (usersData && usersData.users) {
-        usersData.users.forEach((u: any) => {
-          if (u.id && u.email) {
-            emailMap.set(u.id, u.email);
-          }
-        });
+      // Buscar emails dos usuários - nota: supabase.auth.admin.listUsers() 
+      // só funciona se tivermos a service role key configurada, o que no sandbox 
+      // pode ser restrito se não estivermos usando a integração correta.
+      // Tentamos buscar via query ou mantemos o ID se falhar.
+      let emailMap = new Map<string, string>();
+      try {
+        const { data: usersData } = await supabase.auth.admin.listUsers();
+        if (usersData && usersData.users) {
+          usersData.users.forEach((u: any) => {
+            if (u.id && u.email) {
+              emailMap.set(u.id, u.email);
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Could not list users from auth admin API", e);
       }
 
       // Combinar dados
       const enrichedProfiles = profilesData?.map(profile => ({
         ...profile,
-        email: emailMap.get(profile.id) || profile.id
+        email: emailMap.get(profile.id) || profile.id.substring(0, 8) + '...'
       }));
       
       return enrichedProfiles;
     },
-    staleTime: 30000 // Cache por 30 segundos
+    staleTime: 30000
   });
 
   const updateProfile = useMutation({

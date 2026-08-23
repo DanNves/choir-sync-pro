@@ -427,12 +427,33 @@ const Configuracoes = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                              <p>Nenhum usuário com acesso especial configurado</p>
-                              <p className="text-sm mt-2">Os usuários com acesso especial aparecerão aqui</p>
-                            </TableCell>
-                          </TableRow>
+                          {profiles
+                            .filter(p => (p.user_roles as any)?.some?.((r: any) => r.role === 'administrador'))
+                            .map((admin) => (
+                              <TableRow key={admin.id}>
+                                <TableCell className="font-medium">{admin.nome}</TableCell>
+                                <TableCell>
+                                  <Badge variant="destructive">Admin</Badge>
+                                </TableCell>
+                                <TableCell>{admin.localidade || 'Geral'}</TableCell>
+                                <TableCell>Hoje</TableCell>
+                                <TableCell>
+                                  <Badge variant="default">Ativo</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Button variant="ghost" size="icon">
+                                    <Settings className="w-4 h-4" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          {profiles.filter(p => (p.user_roles as any)?.some?.((r: any) => r.role === 'administrador')).length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                <p>Nenhum usuário com acesso especial configurado</p>
+                              </TableCell>
+                            </TableRow>
+                          )}
                         </TableBody>
                       </Table>
                       <div className="mt-4">
