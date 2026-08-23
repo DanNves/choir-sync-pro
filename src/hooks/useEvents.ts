@@ -11,7 +11,7 @@ export function useEvents() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
-        .select('id, nome, tipo, data, horario, duracao, local, status, participantes_esperados, responsavel, active')
+        .select('*')
         .order('data', { ascending: false });
       
       if (error) throw error;
