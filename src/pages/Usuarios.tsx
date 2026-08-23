@@ -100,6 +100,22 @@ const Usuarios = () => {
     ultimoAcesso: "Hoje"
   }))
 
+  // Ensure current user is in the list if not already there (fallback for admin self-view)
+  const { user: currentUser } = useAuth();
+  if (currentUser && !usuarios.find(u => u.id === currentUser.id)) {
+    usuarios.push({
+      id: currentUser.id,
+      nome: currentUser.nome,
+      email: currentUser.email,
+      papel: currentUser.papel,
+      papelExibicao: roleLabelMap[currentUser.papel],
+      local: currentUser.localidade || 'Não informado',
+      status: "Ativo",
+      instrumento: 'Administrador',
+      ultimoAcesso: "Agora"
+    });
+  }
+
   const validateForm = (data: any, isEdit = false) => {
     const newErrors: {[key: string]: string} = {}
     
