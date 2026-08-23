@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
@@ -545,7 +546,19 @@ const Eventos = () => {
                         value={editForm.local}
                         onChange={(e) => setEditForm({...editForm, local: e.target.value})}
                       />
-                    </div>
+                      <div className="flex items-center justify-between space-x-2 py-2">
+                        <Label htmlFor="active" className="flex flex-col space-y-1">
+                          <span>Ativo</span>
+                          <span className="font-normal text-xs text-muted-foreground">
+                            Eventos inativos aparecem apenas para administradores.
+                          </span>
+                        </Label>
+                        <Switch
+                          id="active"
+                          checked={editForm.active}
+                          onCheckedChange={(checked) => setEditForm({...editForm, active: checked})}
+                        />
+                      </div>
 
                     <div>
                       <Label htmlFor="participantes">Limite de Participantes</Label>
@@ -630,7 +643,19 @@ const Eventos = () => {
                         value={newForm.local}
                         onChange={(e) => setNewForm({...newForm, local: e.target.value})}
                       />
-                    </div>
+                      <div className="flex items-center justify-between space-x-2 py-2">
+                        <Label htmlFor="new-active" className="flex flex-col space-y-1">
+                          <span>Ativo</span>
+                          <span className="font-normal text-xs text-muted-foreground">
+                            Eventos inativos aparecem apenas para administradores.
+                          </span>
+                        </Label>
+                        <Switch
+                          id="new-active"
+                          checked={newForm.active}
+                          onCheckedChange={(checked) => setNewForm({...newForm, active: checked})}
+                        />
+                      </div>
 
                     <div>
                       <Label htmlFor="new-participantes">Limite de Participantes</Label>
