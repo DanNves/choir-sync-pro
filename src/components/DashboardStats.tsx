@@ -166,11 +166,11 @@ export function DashboardStats() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground mb-1">{stat.value}</div>
-                <Badge 
-                  variant={stat.changeType === 'positive' ? 'default' : 
-                          stat.changeType === 'negative' ? 'destructive' : 'secondary'}
-                  className="text-xs"
-                >
+              <Badge 
+                variant={stat.changeType === 'positive' ? 'default' : 
+                        (stat.changeType as string) === 'negative' ? 'destructive' : 'secondary'}
+                className="text-xs"
+              >
                   {stat.change}
                 </Badge>
               </CardContent>
