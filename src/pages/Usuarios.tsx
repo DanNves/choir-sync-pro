@@ -98,7 +98,7 @@ const Usuarios = () => {
     local: profile.localidade || 'Não informado',
     status: "Ativo",
     instrumento: profile.instrumento || 'Não possui',
-    ultimoAcesso: "Hoje"
+    ultimoAcesso: profile.created_at ? format(new Date(profile.created_at), 'dd/MM/yyyy') : "N/A"
   }))
 
   // Ensure current user is in the list if not already there (fallback for admin self-view)
@@ -112,7 +112,7 @@ const Usuarios = () => {
       papelExibicao: roleLabelMap[currentUser.papel] || currentUser.papel,
       local: currentUser.localidade || 'Não informado',
       status: "Ativo",
-      instrumento: 'Administrador',
+      instrumento: currentUser.instrumento || 'Administrador',
       ultimoAcesso: "Agora"
     });
   }
