@@ -571,7 +571,6 @@ const Eventos = () => {
                         onChange={(e) => setEditForm({...editForm, participantes: e.target.value})}
                       />
                     </div>
-                    </div>
 
                     <div className="flex justify-end gap-2 pt-4">
                       <Button variant="outline" onClick={() => setIsEditOpen(false)}>
@@ -671,7 +670,6 @@ const Eventos = () => {
                         value={newForm.participantes}
                         onChange={(e) => setNewForm({...newForm, participantes: e.target.value})}
                       />
-                    </div>
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4">
