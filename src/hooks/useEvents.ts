@@ -15,7 +15,7 @@ export function useEvents() {
         .order('data', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     staleTime: 30000 // Cache por 30 segundos
   });
