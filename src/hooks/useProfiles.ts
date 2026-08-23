@@ -27,7 +27,7 @@ export function useProfiles() {
       let emailMap = new Map<string, string>();
       try {
         const { data: usersData, error: listError } = await supabase.auth.admin.listUsers();
-        if (listError) throw listError;
+        
         if (usersData && usersData.users) {
           usersData.users.forEach((u: any) => {
             if (u.id && u.email) {
@@ -42,10 +42,10 @@ export function useProfiles() {
       // Combinar dados
       const enrichedProfiles = profilesData?.map(profile => ({
         ...profile,
-        email: emailMap.get(profile.id) || profile.id.substring(0, 8) + '...'
+        email: emailMap.get(profile.id) || (profile as any).email || profile.id.substring(0, 8) + '...'
       }));
       
-      return enrichedProfiles;
+      return enrichedProfiles as any[];
     },
     staleTime: 30000
   });
