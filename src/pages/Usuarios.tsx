@@ -109,7 +109,7 @@ const Usuarios = () => {
       nome: currentUser.nome,
       email: currentUser.email,
       papel: currentUser.papel,
-      papelExibicao: roleLabelMap[currentUser.papel],
+      papelExibicao: roleLabelMap[currentUser.papel] || currentUser.papel,
       local: currentUser.localidade || 'Não informado',
       status: "Ativo",
       instrumento: 'Administrador',
