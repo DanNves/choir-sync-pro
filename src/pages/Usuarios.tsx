@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { format } from "date-fns"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
@@ -110,9 +111,9 @@ const Usuarios = () => {
       email: currentUser.email,
       papel: currentUser.papel,
       papelExibicao: roleLabelMap[currentUser.papel] || currentUser.papel,
-      local: currentUser.localidade || 'Não informado',
+      local: (currentUser as any).localidade || 'Não informado',
       status: "Ativo",
-      instrumento: currentUser.instrumento || 'Administrador',
+      instrumento: (currentUser as any).instrumento || 'Administrador',
       ultimoAcesso: "Agora"
     });
   }
