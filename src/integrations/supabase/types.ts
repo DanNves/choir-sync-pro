@@ -67,6 +67,7 @@ export type Database = {
       }
       events: {
         Row: {
+          active: boolean
           created_at: string
           data: string
           descricao: string | null
@@ -82,6 +83,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean
           created_at?: string
           data: string
           descricao?: string | null
@@ -97,6 +99,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean
           created_at?: string
           data?: string
           descricao?: string | null
