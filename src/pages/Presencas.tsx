@@ -82,7 +82,7 @@ const Presencas = () => {
     .map((att: any) => ({
       id: att.id,
       nome: att.profiles?.nome || 'N/A',
-      horario: att.horario_entrada || format(new Date(att.created_at), 'HH:mm'),
+      horario: att.horario_entrada || (att.created_at ? format(new Date(att.created_at), 'HH:mm') : 'N/A'),
       metodo: "Manual",
       status: att.status,
       instrumento: att.profiles?.instrumento || 'N/A'
