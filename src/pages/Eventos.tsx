@@ -40,21 +40,19 @@ const Eventos = () => {
   const { toast } = useToast()
   const { events, isLoading, createEvent, updateEvent, deleteEvent } = useEvents()
   
-  const eventos = events
-    .filter((event: any) => event.active !== false || profiles.some(p => p.id === event.created_by && p.user_roles?.[0]?.role === 'admin')) // This filter is a bit complex, actually better to use RBAC logic
-    .map((event: any) => ({
-      id: event.id,
-      titulo: event.nome,
-      tipo: event.tipo,
-      data: event.data,
-      horario: `${event.horario} - ${event.duracao}min`,
-      local: event.local,
-      participantes: event.participantes_esperados,
-      status: event.status,
-      presencas: 0,
-      qrCode: false,
-      active: event.active
-    }))
+  const eventos = events.map((event: any) => ({
+    id: event.id,
+    titulo: event.nome,
+    tipo: event.tipo,
+    data: event.data,
+    horario: `${event.horario} - ${event.duracao}min`,
+    local: event.local,
+    participantes: event.participantes_esperados,
+    status: event.status,
+    presencas: 0,
+    qrCode: false,
+    active: event.active
+  }))
 
   const [selectedEvento, setSelectedEvento] = useState(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)

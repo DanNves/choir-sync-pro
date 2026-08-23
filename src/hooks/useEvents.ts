@@ -9,7 +9,7 @@ export function useEvents() {
   const { user } = useAuth();
 
   const { data: events, isLoading } = useQuery({
-    queryKey: ['events'],
+    queryKey: ['events', user?.papel],
     queryFn: async () => {
       let query = supabase
         .from('events')
@@ -17,8 +17,9 @@ export function useEvents() {
         .order('data', { ascending: false });
       
       // Se não for admin, filtra apenas eventos ativos
-      if (user?.papel !== 'admin') {
-        query = query.eq('active', true);
+      // Nota: Cast 'admin' para 'any' para evitar erro de overlap de tipo com UserRole se necessário
+      if (user?.papel !== ('administrador' as any)) {
+        query = query.filter('active', 'eq', true);
       }
 
       const { data, error } = await query;
@@ -27,7 +28,7 @@ export function useEvents() {
       return data as any[];
     },
     staleTime: 30000,
-    enabled: !!user // Espera o usuário estar carregado
+    enabled: !!user
   });
 
   const createEvent = useMutation({
