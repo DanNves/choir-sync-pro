@@ -102,7 +102,7 @@ export function DashboardStats() {
   }, {})
 
   const instrumentData = Object.entries(instrumentCounts)
-    .map(([name, value]) => ({ name, value }))
+    .map(([name, value]) => ({ name, value: value as number }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5)
 
