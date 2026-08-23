@@ -68,7 +68,7 @@ const Presencas = () => {
   const [selectedEventId, setSelectedEventId] = useState<string>("")
 
   // Get current/active event (most recent)
-  const eventoAtual = events.length > 0 ? events[0] : null
+  const eventoAtual = events.length > 0 ? (events.find((e: any) => e.active !== false) || events[0]) : null
   
   useEffect(() => {
     if (eventoAtual) {
@@ -102,7 +102,7 @@ const Presencas = () => {
     }))
 
   // Calculate historic events stats
-  const historicoEventos = events.slice(1, 4).map((event: any) => {
+  const historicoEventos = events.filter((e: any) => e.id !== eventoAtual?.id && (e.active !== false)).slice(0, 3).map((event: any) => {
     const eventAttendances = attendances.filter((att: any) => att.event_id === event.id)
     const presencasCount = eventAttendances.length
     const taxa = event.participantes_esperados > 0 
