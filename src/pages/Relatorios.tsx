@@ -83,7 +83,7 @@ const Relatorios = () => {
     const presencasConfirmadas = attendances.filter(a => a.status === 'Presente').length
     const taxaPresenca = totalPresencas > 0 ? (presencasConfirmadas / totalPresencas) * 100 : 0
 
-    const eventosRealizados = events.filter(e => {
+    const eventosRealizados = events.filter((e: any) => {
       const eventDate = new Date(e.data)
       const now = new Date()
       return eventDate < now
@@ -134,7 +134,7 @@ const Relatorios = () => {
       return attendanceDate === hoje
     }).length
 
-    const eventosAtivos = events.filter(e => {
+    const eventosAtivos = events.filter((e: any) => {
       const eventDate = new Date(e.data)
       const now = new Date()
       return eventDate >= now
@@ -178,7 +178,7 @@ const Relatorios = () => {
   const eventosDisponiveis = useMemo(() => {
     return [
       { id: "todos", nome: "Todos os Eventos" },
-      ...events.map(e => ({ 
+      ...events.map((e: any) => ({ 
         id: e.id, 
         nome: `${e.nome} - ${format(new Date(e.data), 'dd/MM')}` 
       }))
