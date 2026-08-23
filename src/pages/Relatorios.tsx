@@ -145,8 +145,8 @@ const Relatorios = () => {
       eventosAtivos,
       presencaHoje,
       avaliacoesPendentes: questionnaires.length,
-      equipesAtivas: 0, // TODO: Count from teams table
-      mediaGeralNotas: 0 // TODO: Calculate from responses
+      equipesAtivas: [...new Set(profiles.map(p => p.localidade).filter(Boolean))].length,
+      mediaGeralNotas: 0
     }
   }, [attendances, events, profiles, questionnaires])
 

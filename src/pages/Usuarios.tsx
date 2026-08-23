@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { format } from "date-fns"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
@@ -98,7 +99,7 @@ const Usuarios = () => {
     local: profile.localidade || 'Não informado',
     status: "Ativo",
     instrumento: profile.instrumento || 'Não possui',
-    ultimoAcesso: "Hoje"
+    ultimoAcesso: profile.created_at ? format(new Date(profile.created_at), 'dd/MM/yyyy') : "N/A"
   }))
 
   // Ensure current user is in the list if not already there (fallback for admin self-view)
@@ -110,9 +111,9 @@ const Usuarios = () => {
       email: currentUser.email,
       papel: currentUser.papel,
       papelExibicao: roleLabelMap[currentUser.papel] || currentUser.papel,
-      local: currentUser.localidade || 'Não informado',
+      local: (currentUser as any).localidade || 'Não informado',
       status: "Ativo",
-      instrumento: 'Administrador',
+      instrumento: (currentUser as any).instrumento || 'Administrador',
       ultimoAcesso: "Agora"
     });
   }
