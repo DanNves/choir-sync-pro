@@ -49,7 +49,8 @@ const Eventos = () => {
     participantes: event.participantes_esperados,
     status: event.status,
     presencas: 0,
-    qrCode: false
+    qrCode: false,
+    active: event.active
   }))
 
   const [selectedEvento, setSelectedEvento] = useState(null)
@@ -63,7 +64,8 @@ const Eventos = () => {
     horario: '',
     local: '',
     participantes: '',
-    status: ''
+    status: '',
+    active: true
   })
 
   const [isNewOpen, setIsNewOpen] = useState(false)
@@ -73,7 +75,8 @@ const Eventos = () => {
     data: '',
     horario: '',
     local: '',
-    participantes: ''
+    participantes: '',
+    active: true
   })
 
   // Cálculos dinâmicos para estatísticas
@@ -98,7 +101,8 @@ const Eventos = () => {
       horario: evento.horario,
       local: evento.local,
       participantes: evento.participantes.toString(),
-      status: evento.status
+      status: evento.status,
+      active: evento.active !== false
     })
     setIsEditOpen(true)
   }
@@ -112,7 +116,8 @@ const Eventos = () => {
       horario: editForm.horario.split(' - ')[0],
       local: editForm.local,
       participantes_esperados: parseInt(editForm.participantes),
-      status: editForm.status
+      status: editForm.status,
+      active: editForm.active
     })
     setIsEditOpen(false)
   }
@@ -149,7 +154,8 @@ const Eventos = () => {
       participantes_esperados: parseInt(newForm.participantes) || 0,
       duracao: 120,
       responsavel: 'Sistema',
-      status: 'Agendado'
+      status: 'Agendado',
+      active: newForm.active
     })
 
     setNewForm({
@@ -158,7 +164,8 @@ const Eventos = () => {
       data: '',
       horario: '',
       local: '',
-      participantes: ''
+      participantes: '',
+      active: true
     })
     setIsNewOpen(false)
   }
