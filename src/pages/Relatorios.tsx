@@ -165,21 +165,25 @@ const Relatorios = () => {
   }
 
   // Mock data for filters
-  const equipesDisponiveis = [
-    { id: "todas", nome: "Todas as Equipes" },
-    { id: "soprano", nome: "Soprano" },
-    { id: "contralto", nome: "Contralto" },
-    { id: "tenor", nome: "Tenor" },
-    { id: "baixo", nome: "Baixo" }
-  ]
+  const equipesDisponiveis = useMemo(() => {
+    return [
+      { id: "todas", nome: "Todas as Equipes" },
+      ...profiles
+        .map(p => p.localidade)
+        .filter((v, i, a) => v && a.indexOf(v) === i)
+        .map(loc => ({ id: loc, nome: loc }))
+    ]
+  }, [profiles])
 
-  const eventosDisponiveis = [
-    { id: "todos", nome: "Todos os Eventos" },
-    { id: "ensaio1", nome: "Ensaio - 12/01" },
-    { id: "ensaio2", nome: "Ensaio - 15/01" },
-    { id: "reuniao1", nome: "Reunião - 20/01" },
-    { id: "apresentacao1", nome: "Apresentação - 25/01" }
-  ]
+  const eventosDisponiveis = useMemo(() => {
+    return [
+      { id: "todos", nome: "Todos os Eventos" },
+      ...events.map(e => ({ 
+        id: e.id, 
+        nome: `${e.nome} - ${format(new Date(e.data), 'dd/MM')}` 
+      }))
+    ]
+  }, [events])
 
   const relatoriosDisponiveis: any[] = []
 
