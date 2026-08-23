@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "sdk_version": "0.27.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://ygxmifyuwwiblndgdttf.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "choir-sync-pro",
+      "version": "0.1.0",
+      "title": "Choir Sync Pro"
+    },
+    "tools": [
+      {
+        "name": "list_profiles",
+        "title": "List Profiles",
+        "description": "List all user profiles in the system.",
+        "annotations": {
+          "readOnlyHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "number",
+              "default": 10,
+              "description": "Limit the number of profiles returned."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
