@@ -31,8 +31,9 @@ export default function OAuthConsent() {
       if (!active) return;
       if (error) return setError(error.message);
       
-      const immediate = data?.redirect_url ?? data?.redirect_to;
-      if (immediate && !data?.client) {
+      // Handle OAuthAuthorizationDetails vs OAuthRedirect union type
+      const immediate = (data as any)?.redirect_url ?? (data as any)?.redirect_to;
+      if (immediate && !(data as any)?.client) {
         window.location.href = immediate;
         return;
       }
@@ -54,7 +55,7 @@ export default function OAuthConsent() {
       return setError(error.message);
     }
     
-    const target = data?.redirect_url ?? data?.redirect_to;
+    const target = (data as any)?.redirect_url ?? (data as any)?.redirect_to;
     if (!target) {
       setBusy(false);
       return setError("No redirect returned by the authorization server.");
