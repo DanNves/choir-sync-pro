@@ -530,12 +530,17 @@ const Eventos = () => {
                       </div>
                       <div>
                         <Label htmlFor="horario">Horário</Label>
-                        <Input
-                          id="horario"
-                          placeholder="ex: 19:00 - 21:00"
-                          value={editForm.horario}
-                          onChange={(e) => setEditForm({...editForm, horario: e.target.value})}
-                        />
+                        <Select value={editForm.horario} onValueChange={(value) => setEditForm({...editForm, horario: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o horário" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="19:00 - 21:00">19:00 - 21:00</SelectItem>
+                            <SelectItem value="08:00 - 10:00">08:00 - 10:00</SelectItem>
+                            <SelectItem value="14:00 - 16:00">14:00 - 16:00</SelectItem>
+                            <SelectItem value="Personalizado">Personalizado</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
@@ -628,12 +633,17 @@ const Eventos = () => {
                       </div>
                       <div>
                         <Label htmlFor="new-horario">Horário *</Label>
-                        <Input
-                          id="new-horario"
-                          placeholder="ex: 19:00 - 21:00"
-                          value={newForm.horario}
-                          onChange={(e) => setNewForm({...newForm, horario: e.target.value})}
-                        />
+                        <Select value={newForm.horario} onValueChange={(value) => setNewForm({...newForm, horario: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o horário" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="19:00 - 21:00">19:00 - 21:00</SelectItem>
+                            <SelectItem value="08:00 - 10:00">08:00 - 10:00</SelectItem>
+                            <SelectItem value="14:00 - 16:00">14:00 - 16:00</SelectItem>
+                            <SelectItem value="Personalizado">Personalizado</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 

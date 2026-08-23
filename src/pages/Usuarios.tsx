@@ -230,6 +230,7 @@ const Usuarios = () => {
   const handleEditUsuario = (usuario: any) => {
     setUsuarioEditando({
       ...usuario,
+      originalPapel: usuario.papel,
       instrumentoOutro: ""
     })
     setEditDialogOpen(true)
@@ -263,23 +264,25 @@ const Usuarios = () => {
       if (profileError) throw profileError;
 
       // Atualizar papel (role) se foi alterado
-      // Primeiro, remover papel antigo
-      const { error: deleteRoleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', usuarioEditando.id);
+      if (usuarioEditando.papel !== usuarioEditando.originalPapel) {
+        // Remover papel antigo
+        const { error: deleteRoleError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', usuarioEditando.id);
 
-      if (deleteRoleError) throw deleteRoleError;
+        if (deleteRoleError) throw deleteRoleError;
 
-      // Inserir novo papel
-      const { error: insertRoleError } = await supabase
-        .from('user_roles')
-        .insert([{
-          user_id: usuarioEditando.id,
-          role: usuarioEditando.papel as any
-        }]);
+        // Inserir novo papel
+        const { error: insertRoleError } = await supabase
+          .from('user_roles')
+          .insert([{
+            user_id: usuarioEditando.id,
+            role: usuarioEditando.papel as any
+          }]);
 
-      if (insertRoleError) throw insertRoleError;
+        if (insertRoleError) throw insertRoleError;
+      }
 
       toast({
         title: "Usuário atualizado",
