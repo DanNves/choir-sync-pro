@@ -67,7 +67,7 @@ const Equipes = () => {
     id: profile.id,
     nome: profile.nome,
     instrumento: profile.instrumento || 'Não possui',
-    email: profile.id,
+    email: profile.email || 'N/A',
     papel: profile.user_roles?.[0]?.role || 'candidato',
     status: 'Ativo'
   }))
