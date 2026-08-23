@@ -5,34 +5,43 @@ import { DashboardStats } from "@/components/DashboardStats"
 import { ConditionalRender } from "@/components/ConditionalRender"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
+
 const Index = () => {
+  const { user, canAccess } = useAuth();
+
+  if (user && !canAccess("dashboard")) {
+    return <Navigate to="/eventos" replace />;
+  }
+
   return (
     <ProtectedRoute resource="dashboard">
       <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <Header />
-          <main className="flex-1 p-6">
-            <div className="max-w-7xl mx-auto">
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h1 className="text-3xl font-bold text-foreground mb-2">
-                      Dashboard Administrativo
-                    </h1>
-                    <p className="text-muted-foreground">
-                      Bem-vindo ao sistema de gestão musical. Gerencie membros, eventos e acompanhe o desempenho da sua comunidade.
-                    </p>
+        <div className="min-h-screen flex w-full bg-background">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col">
+            <Header />
+            <main className="flex-1 p-6">
+              <div className="max-w-7xl mx-auto">
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h1 className="text-3xl font-bold text-foreground mb-2">
+                        Dashboard Administrativo
+                      </h1>
+                      <p className="text-muted-foreground">
+                        Bem-vindo ao sistema de gestão musical. Gerencie membros, eventos e acompanhe o desempenho da sua comunidade.
+                      </p>
+                    </div>
                   </div>
                 </div>
+                <DashboardStats />
               </div>
-              <DashboardStats />
-            </div>
-          </main>
+            </main>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
     </ProtectedRoute>
   );
 };
