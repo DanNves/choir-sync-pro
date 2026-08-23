@@ -48,8 +48,8 @@ export function DashboardStats() {
         duration: 0.5,
         ease: "easeOut"
       }
-    })
-  }
+    }) as const
+  } as any
 
   const currentMonth = new Date().getMonth()
   const eventsThisMonth = events.filter(e => {
