@@ -37,6 +37,7 @@ const menuItems = [
 ]
 
 const adminItems = [
+  { title: "Notificações", url: "/notificacoes", icon: Bell, resource: "dashboard" },
   { title: "Configurações", url: "/configuracoes", icon: Settings, resource: "configuracoes" },
 ]
 
