@@ -428,7 +428,7 @@ const Configuracoes = () => {
                         </TableHeader>
                         <TableBody>
                           {profiles
-                            .filter(p => p.user_roles?.some((r: any) => r.role === 'administrador'))
+                            .filter(p => (p.user_roles as any)?.some?.((r: any) => r.role === 'administrador'))
                             .map((admin) => (
                               <TableRow key={admin.id}>
                                 <TableCell className="font-medium">{admin.nome}</TableCell>
@@ -447,7 +447,7 @@ const Configuracoes = () => {
                                 </TableCell>
                               </TableRow>
                             ))}
-                          {profiles.filter(p => p.user_roles?.some((r: any) => r.role === 'administrador')).length === 0 && (
+                          {profiles.filter(p => (p.user_roles as any)?.some?.((r: any) => r.role === 'administrador')).length === 0 && (
                             <TableRow>
                               <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                                 <p>Nenhum usuário com acesso especial configurado</p>
