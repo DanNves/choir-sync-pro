@@ -15,6 +15,7 @@ import Questionarios from "./pages/Questionarios";
 import Ranking from "./pages/Ranking";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
+import Notificacoes from "./pages/Notificacoes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
