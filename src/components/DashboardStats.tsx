@@ -52,9 +52,9 @@ export function DashboardStats() {
   } as any
 
   const currentMonth = new Date().getMonth()
-  const eventsThisMonth = events.filter(e => {
+  const eventsThisMonth = events.filter((e: any) => {
     const eventMonth = new Date(e.data).getMonth()
-    return eventMonth === currentMonth
+    return eventMonth === currentMonth && e.active !== false
   }).length
 
   const attendanceRate = attendances.length > 0 
@@ -62,10 +62,10 @@ export function DashboardStats() {
     : "0"
 
   const upcomingEvents = events
-    .filter(e => new Date(e.data) >= new Date())
-    .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+    .filter((e: any) => new Date(e.data) >= new Date() && e.active !== false)
+    .sort((a: any, b: any) => new Date(a.data).getTime() - new Date(b.data).getTime())
     .slice(0, 3)
-    .map(e => ({
+    .map((e: any) => ({
       id: e.id,
       title: e.nome,
       time: `${e.horario}`,
@@ -102,7 +102,7 @@ export function DashboardStats() {
   }, {})
 
   const instrumentData = Object.entries(instrumentCounts)
-    .map(([name, value]) => ({ name, value }))
+    .map(([name, value]) => ({ name, value: value as number }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5)
 

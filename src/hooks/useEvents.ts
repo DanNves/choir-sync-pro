@@ -1,23 +1,34 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useEvents() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: events, isLoading } = useQuery({
-    queryKey: ['events'],
+    queryKey: ['events', user?.papel],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('events')
-        .select('id, nome, tipo, data, horario, duracao, local, status, participantes_esperados, responsavel')
+        .select('*')
         .order('data', { ascending: false });
       
+      // Se não for admin, filtra apenas eventos ativos
+      // Nota: Cast 'admin' para 'any' para evitar erro de overlap de tipo com UserRole se necessário
+      if (user?.papel !== ('administrador' as any)) {
+        query = query.filter('active', 'eq', true);
+      }
+
+      const { data, error } = await query;
+      
       if (error) throw error;
-      return data;
+      return data as any[];
     },
-    staleTime: 30000 // Cache por 30 segundos
+    staleTime: 30000,
+    enabled: !!user
   });
 
   const createEvent = useMutation({

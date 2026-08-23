@@ -11,7 +11,13 @@ export function useAttendances() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('attendances')
-        .select('id, event_id, user_id, status, horario_entrada, horario_saida, observacoes, created_at')
+        .select(`
+          id, event_id, user_id, status, horario_entrada, horario_saida, observacoes, created_at,
+          profiles (
+            nome,
+            instrumento
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;

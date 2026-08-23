@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/AppSidebar"
 import { Header } from "@/components/Header"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { ConditionalRender } from "@/components/ConditionalRender"
+import { useAuth } from "@/contexts/AuthContext"
 import { useProfiles } from "@/hooks/useProfiles"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
@@ -99,6 +100,22 @@ const Usuarios = () => {
     instrumento: profile.instrumento || 'Não possui',
     ultimoAcesso: "Hoje"
   }))
+
+  // Ensure current user is in the list if not already there (fallback for admin self-view)
+  const { user: currentUser } = useAuth();
+  if (currentUser && !usuarios.find(u => u.id === currentUser.id)) {
+    usuarios.push({
+      id: currentUser.id,
+      nome: currentUser.nome,
+      email: currentUser.email,
+      papel: currentUser.papel,
+      papelExibicao: roleLabelMap[currentUser.papel] || currentUser.papel,
+      local: currentUser.localidade || 'Não informado',
+      status: "Ativo",
+      instrumento: 'Administrador',
+      ultimoAcesso: "Agora"
+    });
+  }
 
   const validateForm = (data: any, isEdit = false) => {
     const newErrors: {[key: string]: string} = {}

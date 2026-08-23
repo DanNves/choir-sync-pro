@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
@@ -49,7 +50,8 @@ const Eventos = () => {
     participantes: event.participantes_esperados,
     status: event.status,
     presencas: 0,
-    qrCode: false
+    qrCode: false,
+    active: event.active
   }))
 
   const [selectedEvento, setSelectedEvento] = useState(null)
@@ -63,7 +65,8 @@ const Eventos = () => {
     horario: '',
     local: '',
     participantes: '',
-    status: ''
+    status: '',
+    active: true
   })
 
   const [isNewOpen, setIsNewOpen] = useState(false)
@@ -73,7 +76,8 @@ const Eventos = () => {
     data: '',
     horario: '',
     local: '',
-    participantes: ''
+    participantes: '',
+    active: true
   })
 
   // Cálculos dinâmicos para estatísticas
@@ -98,7 +102,8 @@ const Eventos = () => {
       horario: evento.horario,
       local: evento.local,
       participantes: evento.participantes.toString(),
-      status: evento.status
+      status: evento.status,
+      active: evento.active !== false
     })
     setIsEditOpen(true)
   }
@@ -112,7 +117,8 @@ const Eventos = () => {
       horario: editForm.horario.split(' - ')[0],
       local: editForm.local,
       participantes_esperados: parseInt(editForm.participantes),
-      status: editForm.status
+      status: editForm.status,
+      active: editForm.active
     })
     setIsEditOpen(false)
   }
@@ -149,7 +155,8 @@ const Eventos = () => {
       participantes_esperados: parseInt(newForm.participantes) || 0,
       duracao: 120,
       responsavel: 'Sistema',
-      status: 'Agendado'
+      status: 'Agendado',
+      active: newForm.active
     })
 
     setNewForm({
@@ -158,7 +165,8 @@ const Eventos = () => {
       data: '',
       horario: '',
       local: '',
-      participantes: ''
+      participantes: '',
+      active: true
     })
     setIsNewOpen(false)
   }
@@ -540,6 +548,20 @@ const Eventos = () => {
                       />
                     </div>
 
+                    <div className="flex items-center justify-between space-x-2 py-2">
+                      <Label htmlFor="active" className="flex flex-col space-y-1">
+                        <span>Ativo</span>
+                        <span className="font-normal text-xs text-muted-foreground">
+                          Eventos inativos aparecem apenas para administradores.
+                        </span>
+                      </Label>
+                      <Switch
+                        id="active"
+                        checked={editForm.active}
+                        onCheckedChange={(checked) => setEditForm({...editForm, active: checked})}
+                      />
+                    </div>
+
                     <div>
                       <Label htmlFor="participantes">Limite de Participantes</Label>
                       <Input
@@ -622,6 +644,20 @@ const Eventos = () => {
                         placeholder="Digite o local do evento"
                         value={newForm.local}
                         onChange={(e) => setNewForm({...newForm, local: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between space-x-2 py-2">
+                      <Label htmlFor="new-active" className="flex flex-col space-y-1">
+                        <span>Ativo</span>
+                        <span className="font-normal text-xs text-muted-foreground">
+                          Eventos inativos aparecem apenas para administradores.
+                        </span>
+                      </Label>
+                      <Switch
+                        id="new-active"
+                        checked={newForm.active}
+                        onCheckedChange={(checked) => setNewForm({...newForm, active: checked})}
                       />
                     </div>
 
